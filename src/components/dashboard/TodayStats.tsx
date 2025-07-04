@@ -69,18 +69,13 @@ export function TodayStats() {
   ];
 
   return (
-    <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
+    <div className="glass-card backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white">
           Today&apos;s Stats
         </h2>
-        <div className="text-sm text-gray-600/80 backdrop-blur-sm bg-white/10 rounded-lg px-3 py-1">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
+        <div className="text-sm text-white/80 backdrop-blur-sm bg-white/10 rounded-lg px-3 py-1">
+          Friday, July 4, 2025
         </div>
       </div>
 

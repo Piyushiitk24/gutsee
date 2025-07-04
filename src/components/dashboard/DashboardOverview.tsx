@@ -9,14 +9,14 @@ export function DashboardOverview() {
   const [avgOutputFreeTime] = useState(18.5);
 
   return (
-    <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
+    <div className="glass-card backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white">
           Overview
         </h2>
         <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-blue-500 animate-pulse"></div>
-          <span className="text-sm text-gray-600/80">Last 30 days</span>
+          <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
+          <span className="text-sm text-white/80">Last 30 days</span>
         </div>
       </div>
 

@@ -58,12 +58,12 @@ export function RecentActivity() {
   ]);
 
   return (
-    <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
+    <div className="glass-card backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white">
           Recent Activity
         </h2>
-        <button className="backdrop-blur-sm bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105">
+        <button className="backdrop-blur-sm bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105">
           View all
         </button>
       </div>

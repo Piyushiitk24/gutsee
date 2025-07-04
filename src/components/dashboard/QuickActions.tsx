@@ -44,12 +44,12 @@ export function QuickActions() {
   ];
 
   return (
-    <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
+    <div className="glass-card backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:bg-white/15">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white">
           Quick Actions
         </h2>
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center animate-pulse">
+        <div className="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center animate-pulse">
           <div className="w-4 h-4 rounded-full bg-white/30"></div>
         </div>
       </div>
@@ -66,10 +66,7 @@ export function QuickActions() {
           <div className="text-right">
             <p className="text-xs text-gray-500">Last irrigation</p>
             <p className="text-sm text-gray-700">
-              {lastIrrigation.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
+              6:00 AM
             </p>
           </div>
         </div>
