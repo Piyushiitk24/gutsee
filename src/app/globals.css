@@ -1,1 +1,313 @@
-@tailwind base;@tailwind components;@tailwind utilities;:root {  --background: #ffffff;  --foreground: #171717;  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";  --font-geist-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;}body {  color: var(--foreground);  background: var(--background);  font-family: var(--font-geist-sans);}/* Custom Animations for Floating Glass Oasis */@keyframes gradient-xy {  0%, 100% {    background-position: 0% 50%;  }  50% {    background-position: 100% 50%;  }}@keyframes float {  0%, 100% {    transform: translateY(0px) rotate(0deg);  }  33% {    transform: translateY(-10px) rotate(5deg);  }  66% {    transform: translateY(5px) rotate(-5deg);  }}@keyframes glow {  0%, 100% {    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);  }  50% {    box-shadow: 0 0 30px rgba(236, 72, 153, 0.6);  }}@keyframes shimmer {  0% {    background-position: -200% 0;  }  100% {    background-position: 200% 0;  }}.animate-gradient-xy {  background-size: 400% 400%;  animation: gradient-xy 15s ease infinite;}.animate-float {  animation: float 6s ease-in-out infinite;}.animate-glow {  animation: glow 3s ease-in-out infinite;}.animate-shimmer {  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);  background-size: 200% 100%;  animation: shimmer 2s infinite;}.animation-delay-2000 {  animation-delay: 2s;}.animation-delay-4000 {  animation-delay: 4s;}/* Glass morphism utilities */.glass {  background: rgba(255, 255, 255, 0.1);  backdrop-filter: blur(10px);  border: 1px solid rgba(255, 255, 255, 0.2);}.glass-strong {  background: rgba(255, 255, 255, 0.15);  backdrop-filter: blur(20px);  border: 1px solid rgba(255, 255, 255, 0.3);}/* Scrollbar styling */::-webkit-scrollbar {  width: 8px;}::-webkit-scrollbar-track {  background: rgba(255, 255, 255, 0.1);  border-radius: 10px;}::-webkit-scrollbar-thumb {  background: linear-gradient(45deg, #8b5cf6, #ec4899);  border-radius: 10px;}::-webkit-scrollbar-thumb:hover {  background: linear-gradient(45deg, #7c3aed, #db2777);}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --font-geist-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-geist-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-geist-sans);
+  overflow-x: hidden;
+}/* Custom Animations for Enhanced Floating Glass Oasis */
+@keyframes gradient-xy {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-radial {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-5deg);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+@keyframes float-medium {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-15px) rotate(8deg);
+  }
+  66% {
+    transform: translateY(8px) rotate(-8deg);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.6);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(236, 72, 153, 0.6), 0 0 80px rgba(236, 72, 153, 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes parallax-drift {
+  0% {
+    transform: translateX(0px) translateY(0px);
+  }
+  33% {
+    transform: translateX(-20px) translateY(10px);
+  }
+  66% {
+    transform: translateX(20px) translateY(-15px);
+  }
+  100% {
+    transform: translateX(0px) translateY(0px);
+  }
+}
+
+@keyframes bubble-float {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-30px) scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.7;
+  }
+}
+
+/* Animation Classes */
+.animate-gradient-xy {
+  background-size: 400% 400%;
+  animation: gradient-xy 15s ease infinite;
+}
+
+.animate-gradient-radial {
+  background-size: 400% 400%;
+  animation: gradient-radial 20s ease infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 7s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-parallax-drift {
+  animation: parallax-drift 12s ease-in-out infinite;
+}
+
+.animate-bubble-float {
+  animation: bubble-float 5s ease-in-out infinite;
+}
+
+/* Animation Delays */
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-3000 {
+  animation-delay: 3s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animation-delay-5000 {
+  animation-delay: 5s;
+}
+
+/* Enhanced Glass morphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.glass-ultra {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+/* Parallax Effects */
+.parallax-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.parallax-bg {
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+  animation: parallax-drift 20s ease-in-out infinite;
+}
+
+.parallax-mid {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  opacity: 0.7;
+  animation: parallax-drift 15s ease-in-out infinite reverse;
+}
+
+.parallax-front {
+  background: linear-gradient(225deg, #89f7fe 0%, #66a6ff 100%);
+  opacity: 0.5;
+  animation: parallax-drift 10s ease-in-out infinite;
+}
+
+/* Enhanced Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #8b5cf6, #ec4899);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #7c3aed, #db2777);
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-medium {
+    animation-duration: 4s;
+  }
+  
+  .glass,
+  .glass-strong {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-strong {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .glass,
+  .glass-strong {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient-xy,
+  .animate-gradient-radial,
+  .animate-float,
+  .animate-float-slow,
+  .animate-float-medium,
+  .animate-glow,
+  .animate-glow-pulse,
+  .animate-shimmer,
+  .animate-parallax-drift,
+  .animate-bubble-float {
+    animation: none;
+  }
+}
