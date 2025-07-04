@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
 import { db } from '@/lib/database';
-import { ApiResponse, DashboardStats } from '@/types';
+import { ApiResponse } from '@/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,22 +17,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get dashboard stats from database
-    const stats = await db.getDashboardStats(user.id);
+    // Get query params
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '10');
 
-    const response: ApiResponse<DashboardStats> = {
+    // Get recent activity from database
+    const activities = await db.getRecentActivity(user.id, limit);
+
+    const response: ApiResponse<typeof activities> = {
       success: true,
-      data: stats,
-      message: 'Dashboard stats retrieved successfully'
+      data: activities,
+      message: 'Recent activity retrieved successfully'
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    console.error('Error fetching recent activity:', error);
     
-    const response: ApiResponse<DashboardStats> = {
+    const response: ApiResponse<any> = {
       success: false,
-      error: 'Failed to fetch dashboard stats'
+      error: 'Failed to fetch recent activity'
     };
 
     return NextResponse.json(response, { status: 500 });
