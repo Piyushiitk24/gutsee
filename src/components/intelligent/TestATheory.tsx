@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatDate } from '@/utils/dateUtils'
 import { 
   LightBulbIcon, 
   ChartBarIcon, 
@@ -316,7 +317,7 @@ export function TestATheory({
 
               <div className="flex items-center justify-between">
                 <span className="text-white/60 text-xs">
-                  Created {theory.createdAt.toLocaleDateString()}
+                  Created {formatDate(theory.createdAt)}
                 </span>
                 {theory.status === 'draft' && (
                   <button

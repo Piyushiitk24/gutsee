@@ -8,9 +8,9 @@ export function formatDate(date: Date, formatStr: string = 'MMM d, yyyy'): strin
 }
 
 /**
- * Format time for display
+ * Format time for display (using 24-hour format to avoid hydration issues)
  */
-export function formatTime(date: Date, formatStr: string = 'h:mm a'): string {
+export function formatTime(date: Date, formatStr: string = 'HH:mm'): string {
   return format(date, formatStr);
 }
 

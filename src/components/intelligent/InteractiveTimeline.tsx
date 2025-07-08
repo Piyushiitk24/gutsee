@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatDate, formatTime } from '@/utils/dateUtils'
 import { 
   CalendarDaysIcon, 
   ChartBarIcon, 
@@ -98,22 +99,6 @@ export function InteractiveTimeline({
   const handleEventClick = (event: TimelineEvent) => {
     setSelectedEvent(event)
     onEventClick(event)
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true
-    })
-  }
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    })
   }
 
   return (

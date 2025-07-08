@@ -47,7 +47,13 @@ yarn-error.log*
 **/.secrets
 **/api-keys.*
 **/credentials.*
-client_secret_681375238435-nj0cj8sr0mo4748q689ku5lm229gh26g.apps.googleusercontent.com.json
+
+# Google OAuth and service account credentials
+client_secret_*.json
+service-account-*.json
+*.service-account.json
+google-credentials.json
+gcp-*.json
 
 # Database
 *.db

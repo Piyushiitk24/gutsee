@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatDate } from '@/utils/dateUtils'
 import { 
   ExclamationTriangleIcon, 
   CheckCircleIcon, 
@@ -471,7 +472,7 @@ export function MealRiskScorer({ meal, userHistory, onRiskAnalyzed }: MealRiskSc
                       <div className="flex justify-between">
                         <span className="text-white/60">Last problem:</span>
                         <span className="text-white">
-                          {selectedFactor.historicalData.lastProblem.toLocaleDateString()}
+                          {formatDate(selectedFactor.historicalData.lastProblem)}
                         </span>
                       </div>
                     )}

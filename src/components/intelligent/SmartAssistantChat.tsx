@@ -3,6 +3,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { formatTime } from '@/utils/dateUtils'
 import { 
   PaperAirplaneIcon,
   MicrophoneIcon,
@@ -320,7 +321,7 @@ export function SmartAssistantChat({
                 <div className={`text-xs mt-1 ${
                   message.type === 'user' ? 'text-purple-200' : 'text-gray-500'
                 }`}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {formatTime(message.timestamp)}
                 </div>
               </div>
             </motion.div>
