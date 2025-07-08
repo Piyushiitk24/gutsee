@@ -13,7 +13,7 @@ The Stoma Tracker app has been successfully enhanced with Google Gemini AI integ
 
 ### **Environment Variables:**
 ```env
-GEMINI_API_KEY=AIzaSyCry-Jh-BPuCq5DAHz6dQGDDMVkyPDMC0Q
+GOOGLE_AI_API_KEY=your_gemini_api_key_here
 ```
 
 ### **Core Service:** `/src/lib/gemini.ts`

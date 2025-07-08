@@ -220,6 +220,9 @@ supabase gen types  # Generate TypeScript types
 ## 🔧 Configuration
 
 ### Environment Variables
+
+⚠️ **SECURITY WARNING**: Never commit your `.env` file or expose API keys in your code. All sensitive environment variables are properly gitignored.
+
 ```bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -232,6 +235,12 @@ GOOGLE_AI_API_KEY=your_gemini_api_key
 # Application Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+🔒 **Security Best Practices**:
+- Copy `.env.example` to `.env` and replace with your actual values
+- Never share your API keys or commit them to version control
+- Use different API keys for development and production
+- Regularly rotate your API keys for security
 
 ### Deployment Options
 - **Vercel**: Optimized for Next.js with automatic deployments
