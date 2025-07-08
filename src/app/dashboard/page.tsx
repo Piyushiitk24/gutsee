@@ -4,7 +4,9 @@ import { useAuth } from '@/context/AuthContext'
 import { SmartAssistantInterface } from '@/components/intelligent/SmartAssistantInterface'
 import { SmartPromptSystem } from '@/components/intelligent/SmartPromptSystem'
 import { IntelligentMealLogger } from '@/components/intelligent/IntelligentMealLogger'
-import { ArrowRightOnRectangleIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { SmartAssistantChat } from '@/components/intelligent/SmartAssistantChat'
+import { GeminiMealAnalysis } from '@/components/intelligent/GeminiMealAnalysis'
+import { ArrowRightOnRectangleIcon, SparklesIcon, BeakerIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
@@ -12,7 +14,10 @@ export default function Dashboard() {
   const { user, signOut } = useAuth()
   const [dashboardStats, setDashboardStats] = useState<any>(null)
   const [userPatterns, setUserPatterns] = useState<any>(null)
-  const [activeSection, setActiveSection] = useState<'assistant' | 'meal-logger' | 'analytics'>('assistant')
+  const [activeSection, setActiveSection] = useState<'assistant' | 'meal-logger' | 'analytics' | 'ai-chat'>('ai-chat')
+  const [testIngredients, setTestIngredients] = useState<string[]>([])
+  const [recentMeals, setRecentMeals] = useState<any[]>([])
+  const [recentOutputs, setRecentOutputs] = useState<any[]>([])
 
   useEffect(() => {
     // Fetch dashboard stats
@@ -23,6 +28,24 @@ export default function Dashboard() {
         setDashboardStats(data)
       } catch (error) {
         console.error('Error fetching dashboard stats:', error)
+      }
+    }
+
+    // Fetch recent meals and outputs for AI analysis
+    const fetchRecentData = async () => {
+      try {
+        const [mealsResponse, outputsResponse] = await Promise.all([
+          fetch('/api/meals'),
+          fetch('/api/outputs')
+        ])
+        
+        const mealsData = await mealsResponse.json()
+        const outputsData = await outputsResponse.json()
+        
+        setRecentMeals(mealsData.data || [])
+        setRecentOutputs(outputsData.data || [])
+      } catch (error) {
+        console.error('Error fetching recent data:', error)
       }
     }
 
@@ -50,8 +73,14 @@ export default function Dashboard() {
     }
 
     fetchStats()
+    fetchRecentData()
     fetchPatterns()
   }, [])
+
+  const handleMealAnalysis = (ingredients: string[]) => {
+    setTestIngredients(ingredients)
+    setActiveSection('analytics')
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -164,14 +193,15 @@ export default function Dashboard() {
         <div className="flex justify-center mb-8">
           <div className="flex bg-white/10 backdrop-blur-sm rounded-2xl p-2 border border-white/20">
             {[
-              { key: 'assistant', label: 'AI Assistant', icon: '🤖' },
+              { key: 'ai-chat', label: 'AI Chat', icon: '💬' },
+              { key: 'assistant', label: 'Assistant', icon: '🤖' },
               { key: 'meal-logger', label: 'Smart Logger', icon: '🍽️' },
               { key: 'analytics', label: 'Insights', icon: '📊' }
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveSection(tab.key as any)}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 text-sm ${
                   activeSection === tab.key
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
                     : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -201,6 +231,31 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
+          {activeSection === 'ai-chat' && (
+            <div className="grid gap-6">
+              <SmartAssistantChat 
+                userHistory={userPatterns}
+                recentMeals={recentMeals}
+                recentOutputs={recentOutputs}
+                onActionRequested={(action, data) => console.log('Action requested:', action, data)}
+              />
+              
+              {testIngredients.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <BeakerIcon className="h-5 w-5" />
+                    Ingredient Analysis Results
+                  </h3>
+                  <GeminiMealAnalysis 
+                    ingredients={testIngredients}
+                    mealName="Test Meal"
+                    onAnalysisComplete={(analysis) => console.log('Analysis complete:', analysis)}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {activeSection === 'assistant' && (
             <SmartAssistantInterface 
               user={user} 
@@ -212,7 +267,7 @@ export default function Dashboard() {
             <IntelligentMealLogger
               currentTime={new Date()}
               userPatterns={userPatterns || {}}
-              recentMeals={[]}
+              recentMeals={recentMeals}
               templates={mockMealTemplates}
               onLogMeal={handleMealLog}
               onCreateTemplate={(meal) => console.log('Create template:', meal)}
@@ -220,9 +275,48 @@ export default function Dashboard() {
           )}
 
           {activeSection === 'analytics' && (
-            <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Advanced Analytics</h2>
-              <p className="text-white/70">Coming soon: Your personalized health insights and pattern analysis will appear here.</p>
+            <div className="space-y-6">
+              <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  <SparklesIcon className="h-6 w-6" />
+                  Gemini AI Meal Analysis
+                </h2>
+                <p className="text-white/70 mb-6">Test ingredient analysis with our AI-powered system</p>
+                
+                <div className="grid gap-4">
+                  <button
+                    onClick={() => handleMealAnalysis(['white rice', 'chicken breast', 'salt'])}
+                    className="p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-colors text-left"
+                  >
+                    <div className="text-white font-medium">Test: Safe Meal</div>
+                    <div className="text-white/60 text-sm">Rice + Chicken + Salt</div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleMealAnalysis(['beans', 'broccoli', 'onion', 'garlic'])}
+                    className="p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-colors text-left"
+                  >
+                    <div className="text-white font-medium">Test: High Gas Risk</div>
+                    <div className="text-white/60 text-sm">Beans + Broccoli + Onion + Garlic</div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleMealAnalysis(['green tea', 'ginger', 'turmeric', 'honey'])}
+                    className="p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/20 transition-colors text-left"
+                  >
+                    <div className="text-white font-medium">Test: Metabolism Boost</div>
+                    <div className="text-white/60 text-sm">Green Tea + Ginger + Turmeric + Honey</div>
+                  </button>
+                </div>
+              </div>
+              
+              {testIngredients.length > 0 && (
+                <GeminiMealAnalysis 
+                  ingredients={testIngredients}
+                  mealName="Test Meal"
+                  onAnalysisComplete={(analysis) => console.log('Analysis complete:', analysis)}
+                />
+              )}
             </div>
           )}
         </motion.div>

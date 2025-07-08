@@ -53,6 +53,7 @@ export function MultiModalLogging({ onMealLogged, onClose }: MultiModalLoggingPr
   const [voiceTranscription, setVoiceTranscription] = useState<VoiceTranscription | null>(null)
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null)
   const [ingredientBreakdown, setIngredientBreakdown] = useState<string[]>([])
+  const [ingredientAnalysis, setIngredientAnalysis] = useState<any[]>([])
   const [customIngredient, setCustomIngredient] = useState('')
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -103,25 +104,62 @@ export function MultiModalLogging({ onMealLogged, onClose }: MultiModalLoggingPr
     }
   }
 
-  // Analyze food image (simulated AI)
+  // Analyze food image using Gemini AI
   const analyzeFoodImage = async (imageData: string) => {
     setIsProcessing(true)
     
-    // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Simulated food recognition results
-    const mockResults: FoodRecognition = {
-      name: 'Grilled Chicken with Rice',
-      confidence: 0.89,
-      calories: 420,
-      servingSize: '1 cup rice + 150g chicken',
-      ingredients: ['white rice', 'chicken breast', 'olive oil', 'salt', 'pepper'],
-      riskLevel: 'low',
-      tags: ['protein', 'carbs', 'low-fiber']
+    try {
+      const response = await fetch('/api/ai/analyze-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageBase64: imageData }),
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to analyze image')
+      }
+      
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        // Convert Gemini response to our format
+        const geminiData = result.data
+        const mockResults: FoodRecognition = {
+          name: geminiData.detectedFoods[0] || 'Unknown Food',
+          confidence: geminiData.confidence || 0.8,
+          calories: 420, // Could be enhanced with nutrition API
+          servingSize: '1 portion',
+          ingredients: geminiData.ingredients?.map((ing: any) => ing.ingredient) || geminiData.detectedFoods,
+          riskLevel: geminiData.ingredients?.[0]?.riskLevel || 'medium',
+          tags: geminiData.suggestions || ['analyzed-by-ai']
+        }
+        
+        setRecognizedFood(mockResults)
+        
+        // Also set detailed ingredient analysis
+        if (geminiData.ingredients) {
+          setIngredientAnalysis(geminiData.ingredients)
+        }
+      } else {
+        throw new Error('Invalid response from AI')
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error)
+      // Fallback to mock data if AI fails
+      const mockResults: FoodRecognition = {
+        name: 'Food Item',
+        confidence: 0.5,
+        calories: 300,
+        servingSize: '1 portion',
+        ingredients: ['unknown ingredients'],
+        riskLevel: 'medium',
+        tags: ['manual-review-needed']
+      }
+      setRecognizedFood(mockResults)
     }
     
-    setRecognizedFood(mockResults)
     setIsProcessing(false)
   }
 
@@ -212,25 +250,66 @@ export function MultiModalLogging({ onMealLogged, onClose }: MultiModalLoggingPr
     setIsProcessing(false)
   }
 
-  // Break down ingredients
-  const analyzeIngredients = () => {
-    const ingredients = ingredientBreakdown.join(', ')
-    // Simulate ingredient analysis
-    const mockAnalysis = {
-      name: `Mixed Meal (${ingredientBreakdown.length} ingredients)`,
-      confidence: 0.95,
-      calories: ingredientBreakdown.length * 50, // Rough estimate
-      servingSize: '1 portion',
-      ingredients: ingredientBreakdown,
-      riskLevel: ingredientBreakdown.some(ing => 
-        ing.toLowerCase().includes('fiber') || 
-        ing.toLowerCase().includes('bean') ||
-        ing.toLowerCase().includes('spicy')
-      ) ? 'medium' as const : 'low' as const,
-      tags: ['custom', 'mixed']
+  // Analyze ingredients using Gemini AI
+  const analyzeIngredients = async () => {
+    if (ingredientBreakdown.length === 0) return
+    
+    setIsProcessing(true)
+    
+    try {
+      const response = await fetch('/api/ai/analyze-ingredients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredients: ingredientBreakdown }),
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to analyze ingredients')
+      }
+      
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        const geminiData = result.data
+        
+        // Convert to our format
+        const analysisResult = {
+          name: `Mixed Meal (${ingredientBreakdown.length} ingredients)`,
+          confidence: 0.95,
+          calories: ingredientBreakdown.length * 50, // Could be enhanced
+          servingSize: '1 portion',
+          ingredients: ingredientBreakdown,
+          riskLevel: geminiData.overallRisk || 'medium',
+          tags: ['ai-analyzed', 'custom']
+        }
+        
+        setRecognizedFood(analysisResult)
+        setIngredientAnalysis(geminiData.ingredients || [])
+      } else {
+        throw new Error('Invalid response from AI')
+      }
+    } catch (error) {
+      console.error('Error analyzing ingredients:', error)
+      // Fallback analysis
+      const mockAnalysis = {
+        name: `Mixed Meal (${ingredientBreakdown.length} ingredients)`,
+        confidence: 0.85,
+        calories: ingredientBreakdown.length * 50,
+        servingSize: '1 portion',
+        ingredients: ingredientBreakdown,
+        riskLevel: ingredientBreakdown.some(ing => 
+          ing.toLowerCase().includes('fiber') || 
+          ing.toLowerCase().includes('bean') ||
+          ing.toLowerCase().includes('spicy')
+        ) ? 'medium' as const : 'low' as const,
+        tags: ['manual-analysis', 'mixed']
+      }
+      setRecognizedFood(mockAnalysis)
     }
     
-    setRecognizedFood(mockAnalysis)
+    setIsProcessing(false)
   }
 
   // Add custom ingredient

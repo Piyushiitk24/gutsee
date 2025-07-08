@@ -11,7 +11,7 @@ import {
   HeartIcon,
   BoltIcon,
   FaceSmileIcon,
-  DropletIcon,
+  // DropletIcon, // Not available in heroicons
   PlusIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon

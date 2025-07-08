@@ -18,7 +18,7 @@ This is a comprehensive colostomy management application built with Next.js, Typ
 ## Technical Stack
 - **Frontend**: Next.js 14+ with App Router, TypeScript, Tailwind CSS
 - **Backend**: Next.js API routes
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: PostgreSQL with Supabase and direct SQL queries
 - **State Management**: React Context/Zustand
 - **Charts**: Recharts or Chart.js
 - **Forms**: React Hook Form with Zod validation

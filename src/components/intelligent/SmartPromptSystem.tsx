@@ -13,7 +13,7 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   StarIcon,
-  TrendingUpIcon,
+  ChartBarIcon, // Using instead of TrendingUpIcon
   CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 
