@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase';
 import { db } from '@/lib/database';
 import { ApiResponse, DashboardStats } from '@/types';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = createClient();
     

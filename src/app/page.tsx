@@ -114,7 +114,7 @@ export default function Home() {
                 </h2>
                 <p className="text-white/80 text-lg mb-8 leading-relaxed">
                   Unlike traditional health apps, our assistant learns from your patterns, provides contextual insights, 
-                  and proactively guides you toward better health outcomes. It's like having a personal health coach 
+                  and proactively guides you toward better health outcomes. It&apos;s like having a personal health coach 
                   that understands your unique colostomy journey.
                 </p>
                 <div className="flex justify-center gap-4">
