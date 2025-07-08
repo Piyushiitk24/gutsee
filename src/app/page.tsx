@@ -70,16 +70,16 @@ export default function Home() {
             ) : (
               <div className="flex gap-2">
                 <Link
-                  href="/auth/login"
+                  href="/auth"
                   className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200"
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="/auth/signup"
+                  href="/auth"
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </div>
             )}

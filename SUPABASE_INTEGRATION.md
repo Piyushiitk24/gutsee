@@ -195,3 +195,56 @@ If you encounter any issues:
 2. Review the Supabase documentation
 3. Check the project's GitHub issues
 4. Contact the development team
+
+## 🔐 Google OAuth Authentication Setup
+
+To enable Google login in your Stoma Tracker app:
+
+### 1. **Google Cloud Console Setup**
+
+1. **Create Google OAuth Credentials**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select existing one
+   - Navigate to "APIs & Services" > "Credentials"
+   - Click "CREATE CREDENTIALS" > "OAuth client ID"
+
+2. **Configure OAuth Consent Screen**:
+   - User Type: External
+   - App Name: "Stoma Tracker"
+   - Developer Contact: Your email
+   - Scopes: email, profile, openid
+
+3. **Create Web Application Credentials**:
+   - Application type: Web application
+   - Name: "Stoma Tracker Supabase Auth"
+   - Authorized redirect URIs: `https://[your-project-id].supabase.co/auth/v1/callback`
+
+### 2. **Supabase Configuration**
+
+1. **Enable Google Provider**:
+   - Go to Supabase Dashboard > Authentication > Providers
+   - Enable "Google"
+   - Enter your Google OAuth Client ID and Client Secret
+
+2. **Required Fields**:
+   - **Client ID**: Your Google OAuth Client ID (ends with `.apps.googleusercontent.com`)
+   - **Client Secret**: Your Google OAuth Client Secret (starts with `GOCSPX-`)
+   - **Callback URL**: Pre-filled by Supabase
+
+### 3. **Implementation in Code**
+
+```typescript
+// Sign in with Google
+const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`
+    }
+  });
+};
+```
+
+### 4. **Testing**
+
+Use the `GoogleAuthTest` component in `src/components/auth/GoogleAuthTest.tsx` to test the integration.
