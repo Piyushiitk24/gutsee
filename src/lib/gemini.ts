@@ -5,11 +5,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
 
-// Get the Gemini Pro model
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+// Get the Gemini 1.5 Flash model (current model)
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-// Get the Gemini Pro Vision model for image analysis
-const visionModel = genAI.getGenerativeModel({ model: 'gemini-pro-vision' });
+// Get the Gemini 1.5 Flash model for image analysis (vision capabilities included)
+const visionModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 export interface IngredientAnalysis {
   ingredient: string;
