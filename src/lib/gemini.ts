@@ -306,6 +306,102 @@ Format as JSON with the structure provided above.
   }
 }
 
+/**
+ * Analyze a food entry description for gut health impact
+ */
+export async function analyzeFoodEntry(description: string): Promise<{
+  flags: string[];
+  riskLevel: 'low' | 'medium' | 'high';
+  confidence: number;
+  insights: string[];
+}> {
+  try {
+    const prompt = `
+Analyze this food entry for a colostomy patient:
+
+Food Description: "${description}"
+
+Provide analysis including:
+1. Potential warning flags (e.g., "gas-producing", "high-fiber", "spicy")
+2. Risk level assessment for colostomy patients
+3. Confidence in assessment (0-1)
+4. Specific insights and recommendations
+
+Format as JSON:
+{
+  "flags": ["flag1", "flag2"],
+  "riskLevel": "low|medium|high",
+  "confidence": 0.85,
+  "insights": ["insight1", "insight2"]
+}
+
+Focus on colostomy-specific considerations like gas production, digestive comfort, and stoma output.
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error analyzing food entry:', error);
+    return {
+      flags: [],
+      riskLevel: 'low' as const,
+      confidence: 0.5,
+      insights: []
+    };
+  }
+}
+
+/**
+ * Analyze a symptom entry description
+ */
+export async function analyzeSymptomEntry(description: string): Promise<{
+  flags: string[];
+  severity: 'low' | 'medium' | 'high';
+  confidence: number;
+  insights: string[];
+}> {
+  try {
+    const prompt = `
+Analyze this symptom entry for a colostomy patient:
+
+Symptom Description: "${description}"
+
+Provide analysis including:
+1. Symptom classification flags
+2. Severity assessment
+3. Confidence in assessment (0-1)
+4. Insights and recommendations
+
+Format as JSON:
+{
+  "flags": ["flag1", "flag2"],
+  "severity": "low|medium|high",
+  "confidence": 0.85,
+  "insights": ["insight1", "insight2"]
+}
+
+Focus on colostomy-specific symptoms and their potential causes.
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error analyzing symptom entry:', error);
+    return {
+      flags: [],
+      severity: 'low' as const,
+      confidence: 0.5,
+      insights: []
+    };
+  }
+}
+
 // Export a default service object
 export const GeminiService = {
   analyzeIngredients,
@@ -313,4 +409,6 @@ export const GeminiService = {
   getPersonalizedRecommendations,
   analyzeSymptoms,
   generateMealPlan,
+  analyzeFoodEntry,
+  analyzeSymptomEntry,
 };
