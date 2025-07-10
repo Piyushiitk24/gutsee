@@ -48,6 +48,8 @@ export default function Dashboard() {
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isIntelligentMode, setIsIntelligentMode] = useState(true) // New: toggle between modes
+  const [multiCategoryText, setMultiCategoryText] = useState('') // New: for intelligent parsing
 
   // Load entries when component mounts
   useEffect(() => {
@@ -290,47 +292,101 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Entry Type Selection */}
+              {/* Mode Toggle */}
               <div className="mb-6">
-                <label className="block text-white font-semibold mb-3">What would you like to log?</label>
-                <input
-                  type="text"
-                  placeholder="Search entry types..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/40 mb-4"
-                />
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                  {filteredEntryTypes.map((type) => (
-                    <button
-                      key={type.key}
-                      onClick={() => setSelectedEntryType(type.key)}
-                      className={`p-3 rounded-lg text-left transition-all duration-200 ${
-                        selectedEntryType === type.key
-                          ? `bg-gradient-to-r ${type.color} text-white`
-                          : 'bg-white/5 text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="text-xl mb-1">{type.icon}</div>
-                      <div className="text-sm font-medium">{type.label}</div>
-                    </button>
-                  ))}
+                <div className="flex bg-white/10 rounded-lg p-1">
+                  <button
+                    onClick={() => setIsIntelligentMode(true)}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                      isIntelligentMode 
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                        : 'text-white/60 hover:text-white'
+                    }`}
+                  >
+                    🧠 Intelligent Mode (Recommended)
+                  </button>
+                  <button
+                    onClick={() => setIsIntelligentMode(false)}
+                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                      !isIntelligentMode 
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' 
+                        : 'text-white/60 hover:text-white'
+                    }`}
+                  >
+                    📝 Traditional Mode
+                  </button>
                 </div>
+                <p className="text-white/60 text-xs mt-2">
+                  {isIntelligentMode 
+                    ? 'Describe everything in natural language - AI will auto-categorize into meals, drinks, irrigation, etc.' 
+                    : 'Select specific category and log individual entries'
+                  }
+                </p>
               </div>
 
-              {/* Description */}
-              {selectedEntryType && (
-                <div className="mb-6">
-                  <label className="block text-white font-semibold mb-3">
-                    Describe in natural language:
-                  </label>
-                  <textarea
-                    value={entryDescription}
-                    onChange={(e) => setEntryDescription(e.target.value)}
-                    placeholder="e.g., I had a bowl of Amritsari paneer bhurji with 2 chapatis and a glass of milk"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 h-32 resize-none"
-                  />
+              {/* Intelligent Mode */}
+              {isIntelligentMode ? (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-white font-semibold mb-3">
+                      🌟 Describe your day naturally:
+                    </label>
+                    <textarea
+                      value={multiCategoryText}
+                      onChange={(e) => setMultiCategoryText(e.target.value)}
+                      placeholder="Example: I had scrambled eggs with 4 eggs, cheese, and peppers. Before that, I had a protein shake. At 8AM I did my irrigation which was difficult but I emptied properly."
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 h-40 resize-none"
+                    />
+                    <p className="text-white/40 text-xs mt-2">
+                      💡 AI will automatically create separate entries for meals, drinks, irrigation, symptoms, etc.
+                    </p>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {/* Traditional Entry Type Selection */}
+                  <div className="mb-6">
+                    <label className="block text-white font-semibold mb-3">What would you like to log?</label>
+                    <input
+                      type="text"
+                      placeholder="Search entry types..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/40 mb-4"
+                    />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+                      {filteredEntryTypes.map((type) => (
+                        <button
+                          key={type.key}
+                          onClick={() => setSelectedEntryType(type.key)}
+                          className={`p-3 rounded-lg text-left transition-all duration-200 ${
+                            selectedEntryType === type.key
+                              ? `bg-gradient-to-r ${type.color} text-white`
+                              : 'bg-white/5 text-white/80 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="text-xl mb-1">{type.icon}</div>
+                          <div className="text-sm font-medium">{type.label}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {selectedEntryType && (
+                    <div className="mb-6">
+                      <label className="block text-white font-semibold mb-3">
+                        Describe in natural language:
+                      </label>
+                      <textarea
+                        value={entryDescription}
+                        onChange={(e) => setEntryDescription(e.target.value)}
+                        placeholder="e.g., I had a bowl of Amritsari paneer bhurji with 2 chapatis and a glass of milk"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 h-32 resize-none"
+                      />
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Date/Time Selection */}
@@ -340,9 +396,18 @@ export default function Dashboard() {
                   <input
                     type="datetime-local"
                     value={selectedDateTime.toISOString().slice(0, 16)}
-                    onChange={(e) => setSelectedDateTime(new Date(e.target.value))}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                    onChange={(e) => {
+                      const newDate = new Date(e.target.value);
+                      if (!isNaN(newDate.getTime())) {
+                        setSelectedDateTime(newDate);
+                      }
+                    }}
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white [color-scheme:dark]"
+                    step="60"
                   />
+                  <p className="text-white/60 text-sm mt-1">
+                    Current: {selectedDateTime.toLocaleString()}
+                  </p>
                 </div>
               )}
 

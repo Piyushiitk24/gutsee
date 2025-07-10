@@ -402,6 +402,134 @@ Focus on colostomy-specific symptoms and their potential causes.
   }
 }
 
+/**
+ * Parse natural language text into multiple health entries
+ * This is the killer feature that auto-categorizes complex descriptions
+ */
+export async function parseMultiCategoryEntry(description: string, baseTimestamp: Date): Promise<{
+  entries: Array<{
+    type: string;
+    description: string;
+    timestamp: Date;
+    confidence: number;
+    details?: any;
+  }>;
+  summary: string;
+  confidence: number;
+}> {
+  try {
+    const prompt = `
+You are an expert colostomy management AI. Parse this natural language description into separate health entries.
+
+User Description: "${description}"
+Base Timestamp: ${baseTimestamp.toISOString()}
+
+CRITICAL: Extract and categorize ALL mentioned activities into separate entries. Look for:
+
+1. MEALS (breakfast, lunch, dinner, snack):
+   - Extract ingredients, quantities, cooking methods
+   - Infer timing if mentioned (e.g., "at 7am", "before", "after")
+
+2. DRINKS (drinks, beverages, supplements):
+   - Protein shakes, water, coffee, etc.
+   - Extract quantities and timing
+
+3. IRRIGATION (irrigation, colostomy care):
+   - Extract quality, timing, difficulties, completeness
+   - Note water flow, emptying success, comfort level
+
+4. BOWEL/GAS (motion, gas, output):
+   - Extract timing, consistency, volume, characteristics
+
+5. MEDICATION/SUPPLEMENTS:
+   - Extract names, dosages, timing
+
+6. SYMPTOMS:
+   - Pain, discomfort, mood, energy levels
+
+For each detected category, provide:
+- type: exact category name (breakfast/lunch/dinner/snack/drinks/irrigation/gas/bowel/medication/supplements/symptoms)
+- description: detailed description for that category only
+- timestamp: estimated time (adjust from base timestamp based on mentioned timing)
+- confidence: 0-1 how confident you are
+- details: structured data for that category
+
+Format response as JSON:
+{
+  "entries": [
+    {
+      "type": "breakfast",
+      "description": "Scrambled eggs with 4 eggs, 2 green chilies, grated cheese, bell pepper, 2 black peppers, cooked in 1 spoon butter, with 2 multigrain toasts",
+      "timestamp": "2025-07-10T07:30:00.000Z",
+      "confidence": 0.95,
+      "details": {
+        "ingredients": ["eggs (4)", "green chilies (2)", "cheese", "bell pepper", "black pepper (2)", "butter (1 spoon)", "multigrain toast (2)"],
+        "cookingMethod": "scrambled",
+        "mealType": "breakfast"
+      }
+    },
+    {
+      "type": "drinks", 
+      "description": "Protein shake - 1 scoop",
+      "timestamp": "2025-07-10T07:00:00.000Z",
+      "confidence": 0.9,
+      "details": {
+        "beverage": "protein shake",
+        "quantity": "1 scoop",
+        "timing": "before breakfast"
+      }
+    },
+    {
+      "type": "irrigation",
+      "description": "Irrigation at 8AM - not very smooth, water not going inside easily, but emptied properly",
+      "timestamp": "2025-07-10T08:00:00.000Z", 
+      "confidence": 0.95,
+      "details": {
+        "quality": "difficult",
+        "waterFlow": "poor",
+        "completion": "good",
+        "notes": "not smooth, water resistance but emptied properly"
+      }
+    }
+  ],
+  "summary": "Parsed 3 entries: breakfast meal, protein drink, and irrigation session",
+  "confidence": 0.93
+}
+
+EXTRACT EVERYTHING mentioned. Don't miss any category. Be thorough and precise.
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    const parsed = JSON.parse(text);
+    
+    // Convert timestamp strings back to Date objects
+    if (parsed.entries) {
+      parsed.entries = parsed.entries.map((entry: any) => ({
+        ...entry,
+        timestamp: new Date(entry.timestamp)
+      }));
+    }
+    
+    return parsed;
+  } catch (error) {
+    console.error('Error parsing multi-category entry:', error);
+    // Fallback: create a single entry
+    return {
+      entries: [{
+        type: 'breakfast', // default fallback
+        description: description,
+        timestamp: baseTimestamp,
+        confidence: 0.5
+      }],
+      summary: 'Could not parse multiple categories, created single entry',
+      confidence: 0.5
+    };
+  }
+}
+
 // Export a default service object
 export const GeminiService = {
   analyzeIngredients,
@@ -411,4 +539,5 @@ export const GeminiService = {
   generateMealPlan,
   analyzeFoodEntry,
   analyzeSymptomEntry,
+  parseMultiCategoryEntry, // New intelligent parsing function
 };
