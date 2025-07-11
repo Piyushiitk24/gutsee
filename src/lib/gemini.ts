@@ -2,14 +2,20 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!);
+// Check if we have a valid API key (not the demo key)
+const apiKey = process.env.GOOGLE_AI_API_KEY;
+const isValidApiKey = apiKey && apiKey !== 'DEMO_KEY_PLACEHOLDER' && apiKey.startsWith('AIzaSy');
 
-// Get the Gemini 1.5 Flash model (current model)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+// Initialize Gemini AI only if we have a valid key
+let genAI: GoogleGenerativeAI | null = null;
+let model: any = null;
+let visionModel: any = null;
 
-// Get the Gemini 1.5 Flash model for image analysis (vision capabilities included)
-const visionModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+if (isValidApiKey) {
+  genAI = new GoogleGenerativeAI(apiKey!);
+  model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  visionModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+}
 
 export interface IngredientAnalysis {
   ingredient: string;
@@ -37,6 +43,11 @@ export interface FoodImageAnalysis {
   confidence: number;
   ingredients: IngredientAnalysis[];
   suggestions: string[];
+}
+
+// Helper function to check if AI is available
+export function isAIAvailable(): boolean {
+  return Boolean(isValidApiKey && model !== null);
 }
 
 /**
@@ -417,6 +428,12 @@ export async function parseMultiCategoryEntry(description: string, baseTimestamp
   summary: string;
   confidence: number;
 }> {
+  // If AI is not available, use enhanced local parsing
+  if (!isAIAvailable()) {
+    console.log('AI not available, using enhanced local parsing...');
+    return enhancedLocalParsing(description, baseTimestamp);
+  }
+
   try {
     const prompt = `
 You are an expert colostomy management AI assistant. Parse this natural language description into separate, detailed health entries for a stoma tracker app.
@@ -528,7 +545,7 @@ CRITICAL REQUIREMENTS:
 Analyze the description thoroughly and extract every possible health-related activity.
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await model!.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
@@ -547,55 +564,191 @@ Analyze the description thoroughly and extract every possible health-related act
     
     return parsed;
   } catch (error) {
-    console.error('Error parsing multi-category entry:', error);
-    
-    // Enhanced fallback: try to extract at least basic categories
-    const fallbackEntries = [];
+    console.error('Error parsing with AI, falling back to local parsing:', error);
+    return enhancedLocalParsing(description, baseTimestamp);
+  }
+}
+
+/**
+ * Enhanced local parsing function when AI is not available
+ */
+function enhancedLocalParsing(description: string, baseTimestamp: Date): Promise<{
+  entries: Array<{
+    type: string;
+    description: string;
+    timestamp: Date;
+    confidence: number;
+    details?: any;
+  }>;
+  summary: string;
+  confidence: number;
+}> {
+  return new Promise((resolve) => {
     const desc = description.toLowerCase();
+    const fallbackEntries = [];
     
-    // Simple keyword detection for fallback
-    if (desc.includes('egg') || desc.includes('breakfast') || desc.includes('meal')) {
-      fallbackEntries.push({
+    // Enhanced keyword detection with better categorization
+    const keywordPatterns = [
+      {
+        keywords: ['egg', 'scrambled', 'omelet', 'breakfast', 'toast', 'cereal', 'oatmeal'],
         type: 'breakfast',
-        description: description,
-        timestamp: baseTimestamp,
-        confidence: 0.6
-      });
-    }
-    
-    if (desc.includes('protein') || desc.includes('shake') || desc.includes('drink')) {
-      fallbackEntries.push({
+        confidence: 0.8
+      },
+      {
+        keywords: ['lunch', 'sandwich', 'salad', 'soup', 'wrap'],
+        type: 'lunch',
+        confidence: 0.8
+      },
+      {
+        keywords: ['dinner', 'evening', 'pasta', 'rice', 'chicken', 'beef'],
+        type: 'dinner',
+        confidence: 0.8
+      },
+      {
+        keywords: ['protein shake', 'drink', 'coffee', 'tea', 'water', 'juice'],
         type: 'drinks',
-        description: 'Mentioned beverage/drink',
-        timestamp: new Date(baseTimestamp.getTime() - 30 * 60 * 1000), // 30 min earlier
-        confidence: 0.5
-      });
-    }
-    
-    if (desc.includes('irrigation') || desc.includes('8am') || desc.includes('morning')) {
-      fallbackEntries.push({
+        confidence: 0.7
+      },
+      {
+        keywords: ['irrigation', 'flush', 'rinse', 'colostomy', 'stoma'],
         type: 'irrigation',
-        description: 'Morning irrigation mentioned',
-        timestamp: new Date(baseTimestamp.getTime() + 30 * 60 * 1000), // 30 min later
-        confidence: 0.5
-      });
+        confidence: 0.9
+      },
+      {
+        keywords: ['gas', 'bloated', 'flatulence', 'wind'],
+        type: 'gas',
+        confidence: 0.8
+      },
+      {
+        keywords: ['pain', 'discomfort', 'cramping', 'soreness'],
+        type: 'symptoms',
+        confidence: 0.7
+      },
+      {
+        keywords: ['output', 'bowel', 'movement', 'consistency'],
+        type: 'output',
+        confidence: 0.8
+      }
+    ];
+
+    // Extract time mentions
+    const timePattern = /(\d{1,2}):?(\d{2})?\s*(am|pm)|(\d{1,2})\s*(am|pm)|(morning|afternoon|evening|night)/gi;
+    const timeMatches = description.match(timePattern);
+    
+    let foundEntries = new Set();
+    
+    // Check for each pattern
+    for (const pattern of keywordPatterns) {
+      for (const keyword of pattern.keywords) {
+        if (desc.includes(keyword) && !foundEntries.has(pattern.type)) {
+          foundEntries.add(pattern.type);
+          
+          // Calculate timestamp based on timing or type
+          let entryTimestamp = baseTimestamp;
+          if (timeMatches && timeMatches.length > 0) {
+            // Try to parse the first time mention
+            const timeStr = timeMatches[0];
+            entryTimestamp = parseTimeToDate(timeStr, baseTimestamp) || baseTimestamp;
+          } else {
+            // Default timing based on meal type
+            if (pattern.type === 'breakfast') {
+              entryTimestamp = new Date(baseTimestamp);
+              entryTimestamp.setHours(8, 0, 0, 0);
+            } else if (pattern.type === 'lunch') {
+              entryTimestamp = new Date(baseTimestamp);
+              entryTimestamp.setHours(12, 30, 0, 0);
+            } else if (pattern.type === 'dinner') {
+              entryTimestamp = new Date(baseTimestamp);
+              entryTimestamp.setHours(19, 0, 0, 0);
+            } else if (pattern.type === 'irrigation') {
+              entryTimestamp = new Date(baseTimestamp);
+              entryTimestamp.setHours(8, 0, 0, 0);
+            }
+          }
+          
+          fallbackEntries.push({
+            type: pattern.type,
+            description: extractRelevantPhrase(description, keyword),
+            timestamp: entryTimestamp,
+            confidence: pattern.confidence,
+            details: {
+              extractedFrom: keyword,
+              method: 'local-parsing'
+            }
+          });
+        }
+      }
     }
     
+    // If no specific patterns found, create a general entry
     if (fallbackEntries.length === 0) {
       fallbackEntries.push({
-        type: 'breakfast',
+        type: 'general',
         description: description,
         timestamp: baseTimestamp,
-        confidence: 0.3
+        confidence: 0.5,
+        details: {
+          method: 'fallback'
+        }
       });
     }
     
-    return {
+    resolve({
       entries: fallbackEntries,
-      summary: `Fallback parsing: created ${fallbackEntries.length} entries`,
-      confidence: 0.4
-    };
+      summary: `Local parsing detected ${fallbackEntries.length} entries from description`,
+      confidence: Math.max(...fallbackEntries.map(e => e.confidence))
+    });
+  });
+}
+
+/**
+ * Helper function to parse time string to Date
+ */
+function parseTimeToDate(timeStr: string, baseDate: Date): Date | null {
+  try {
+    const lowerTime = timeStr.toLowerCase();
+    let hours = 12, minutes = 0;
+    
+    if (lowerTime.includes('morning')) hours = 8;
+    else if (lowerTime.includes('afternoon')) hours = 14;
+    else if (lowerTime.includes('evening')) hours = 19;
+    else if (lowerTime.includes('night')) hours = 21;
+    else {
+      // Try to parse actual time
+      const timeMatch = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)?/i);
+      if (timeMatch) {
+        hours = parseInt(timeMatch[1]);
+        minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+        
+        if (timeMatch[3] && timeMatch[3].toLowerCase() === 'pm' && hours !== 12) {
+          hours += 12;
+        } else if (timeMatch[3] && timeMatch[3].toLowerCase() === 'am' && hours === 12) {
+          hours = 0;
+        }
+      }
+    }
+    
+    const result = new Date(baseDate);
+    result.setHours(hours, minutes, 0, 0);
+    return result;
+  } catch (error) {
+    return null;
   }
+}
+
+/**
+ * Helper function to extract relevant phrase around a keyword
+ */
+function extractRelevantPhrase(text: string, keyword: string): string {
+  const words = text.split(' ');
+  const keywordIndex = words.findIndex(word => word.toLowerCase().includes(keyword.toLowerCase()));
+  
+  if (keywordIndex === -1) return text;
+  
+  const start = Math.max(0, keywordIndex - 3);
+  const end = Math.min(words.length, keywordIndex + 4);
+  
+  return words.slice(start, end).join(' ');
 }
 
 // Export a default service object
@@ -608,4 +761,5 @@ export const GeminiService = {
   analyzeFoodEntry,
   analyzeSymptomEntry,
   parseMultiCategoryEntry, // New intelligent parsing function
+  isAIAvailable,
 };

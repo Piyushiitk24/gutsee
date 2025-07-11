@@ -70,6 +70,166 @@ export const FOOD_DATABASE: FoodItem[] = [
     nutritionPer100g: { calories: 337, protein: 16, carbs: 9, fat: 27, fiber: 0, sugar: 9 }
   },
 
+  // EGGS
+  {
+    id: 'eggs-scrambled',
+    name: 'Scrambled Eggs',
+    category: 'Protein',
+    subcategory: 'Eggs',
+    commonNames: ['scrambled eggs', 'eggs', 'scrambled', 'egg'],
+    ingredients: ['eggs', 'butter', 'salt'],
+    allergens: ['eggs'],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'whole',
+    commonTriggers: [],
+    nutritionPer100g: { calories: 149, protein: 10, carbs: 1, fat: 11, fiber: 0, sugar: 1 }
+  },
+  {
+    id: 'eggs-boiled',
+    name: 'Boiled Eggs',
+    category: 'Protein',
+    subcategory: 'Eggs',
+    commonNames: ['boiled eggs', 'hard boiled eggs', 'soft boiled eggs'],
+    ingredients: ['eggs'],
+    allergens: ['eggs'],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'whole',
+    commonTriggers: [],
+    nutritionPer100g: { calories: 155, protein: 13, carbs: 1.1, fat: 11, fiber: 0, sugar: 1.1 }
+  },
+
+  // RICE & GRAINS
+  {
+    id: 'rice-white',
+    name: 'White Rice',
+    category: 'Grains',
+    subcategory: 'Rice',
+    commonNames: ['rice', 'white rice', 'steamed rice', 'basmati rice'],
+    ingredients: ['rice'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'processed',
+    commonTriggers: [],
+    nutritionPer100g: { calories: 130, protein: 2.7, carbs: 28, fat: 0.3, fiber: 0.4, sugar: 0.1 }
+  },
+  {
+    id: 'rice-brown',
+    name: 'Brown Rice',
+    category: 'Grains',
+    subcategory: 'Rice',
+    commonNames: ['brown rice', 'whole grain rice'],
+    ingredients: ['brown rice'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'high',
+    spiceLevel: 'none',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['high fiber'],
+    nutritionPer100g: { calories: 112, protein: 2.6, carbs: 23, fat: 0.9, fiber: 1.8, sugar: 0.4 }
+  },
+
+  // VEGETABLES  
+  {
+    id: 'onion-white',
+    name: 'White Onion',
+    category: 'Vegetables',
+    subcategory: 'Root Vegetables',
+    commonNames: ['onion', 'white onion', 'onions'],
+    ingredients: ['onion'],
+    allergens: [],
+    fodmapLevel: 'high',
+    fiberContent: 'medium',
+    spiceLevel: 'mild',
+    processingLevel: 'whole',
+    commonTriggers: ['FODMAP', 'gas-producing'],
+    nutritionPer100g: { calories: 40, protein: 1.1, carbs: 9.3, fat: 0.1, fiber: 1.7, sugar: 4.2 }
+  },
+  {
+    id: 'garlic',
+    name: 'Garlic',
+    category: 'Vegetables',
+    subcategory: 'Aromatic Vegetables',
+    commonNames: ['garlic', 'garlic cloves'],
+    ingredients: ['garlic'],
+    allergens: [],
+    fodmapLevel: 'high',
+    fiberContent: 'low',
+    spiceLevel: 'medium',
+    processingLevel: 'whole',
+    commonTriggers: ['FODMAP', 'gas-producing', 'strong flavor'],
+    nutritionPer100g: { calories: 149, protein: 6.4, carbs: 33, fat: 0.5, fiber: 2.1, sugar: 1 }
+  },
+
+  // SPICES & SEASONINGS
+  {
+    id: 'salt',
+    name: 'Salt',
+    category: 'Seasonings',
+    subcategory: 'Basic Seasonings',
+    commonNames: ['salt', 'table salt', 'sea salt'],
+    ingredients: ['sodium chloride'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'processed',
+    commonTriggers: ['high sodium'],
+    nutritionPer100g: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0 }
+  },
+  {
+    id: 'black-pepper',
+    name: 'Black Pepper',
+    category: 'Seasonings',
+    subcategory: 'Spices',
+    commonNames: ['black pepper', 'pepper', 'ground pepper'],
+    ingredients: ['black pepper'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'medium',
+    spiceLevel: 'medium',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['spice'],
+    nutritionPer100g: { calories: 251, protein: 10, carbs: 64, fat: 3.3, fiber: 25, sugar: 0.6 }
+  },
+
+  // OILS & FATS
+  {
+    id: 'butter',
+    name: 'Butter',
+    category: 'Fats',
+    subcategory: 'Dairy Fats',
+    commonNames: ['butter', 'unsalted butter', 'salted butter'],
+    ingredients: ['cream', 'salt'],
+    allergens: ['milk'],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['high fat', 'lactose'],
+    nutritionPer100g: { calories: 717, protein: 0.9, carbs: 0.1, fat: 81, fiber: 0, sugar: 0.1 }
+  },
+  {
+    id: 'olive-oil',
+    name: 'Olive Oil',
+    category: 'Fats',
+    subcategory: 'Plant Oils',
+    commonNames: ['olive oil', 'extra virgin olive oil', 'EVOO'],
+    ingredients: ['olives'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['high fat'],
+    nutritionPer100g: { calories: 884, protein: 0, carbs: 0, fat: 100, fiber: 0, sugar: 0 }
+  },
+
   // MEAT & POULTRY
   {
     id: 'chicken-breast',
@@ -215,6 +375,66 @@ export const FOOD_DATABASE: FoodItem[] = [
     processingLevel: 'minimally-processed',
     commonTriggers: ['caffeine', 'acidity'],
     nutritionPer100g: { calories: 2, protein: 0.3, carbs: 0, fat: 0, fiber: 0, sugar: 0 }
+  },
+  {
+    id: 'chai-tea',
+    name: 'Chai Tea',
+    category: 'Beverages',
+    subcategory: 'Hot Beverages',
+    commonNames: ['chai', 'chai tea', 'masala chai', 'spiced tea'],
+    ingredients: ['black tea', 'milk', 'sugar', 'spices', 'cardamom', 'cinnamon', 'ginger'],
+    allergens: ['milk'],
+    fodmapLevel: 'medium',
+    fiberContent: 'low',
+    spiceLevel: 'mild',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['caffeine', 'lactose', 'spices'],
+    nutritionPer100g: { calories: 42, protein: 1.6, carbs: 7, fat: 1.5, fiber: 0, sugar: 6 }
+  },
+  {
+    id: 'green-tea',
+    name: 'Green Tea',
+    category: 'Beverages',
+    subcategory: 'Hot Beverages',
+    commonNames: ['green tea', 'matcha', 'sencha'],
+    ingredients: ['green tea leaves', 'water'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['caffeine'],
+    nutritionPer100g: { calories: 1, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0 }
+  },
+  {
+    id: 'water-plain',
+    name: 'Water',
+    category: 'Beverages',
+    subcategory: 'Water',
+    commonNames: ['water', 'plain water', 'drinking water'],
+    ingredients: ['water'],
+    allergens: [],
+    fodmapLevel: 'low',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'whole',
+    commonTriggers: [],
+    nutritionPer100g: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0 }
+  },
+  {
+    id: 'milk-whole',
+    name: 'Whole Milk',
+    category: 'Dairy',
+    subcategory: 'Milk',
+    commonNames: ['milk', 'whole milk', 'full fat milk'],
+    ingredients: ['milk'],
+    allergens: ['milk'],
+    fodmapLevel: 'high',
+    fiberContent: 'low',
+    spiceLevel: 'none',
+    processingLevel: 'minimally-processed',
+    commonTriggers: ['lactose'],
+    nutritionPer100g: { calories: 61, protein: 3.2, carbs: 4.8, fat: 3.3, fiber: 0, sugar: 5.1 }
   }
 ];
 

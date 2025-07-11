@@ -72,7 +72,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
 
   // Demo mode detection - checking if we have real API keys
   const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('supabase.co') || 
-                     process.env.GOOGLE_AI_API_KEY === 'AIzaSyCry-Jh-BPuCq5DAHz6dQGDDMVkyPDMC0Q';
+                     process.env.GOOGLE_AI_API_KEY === 'DEMO_KEY_PLACEHOLDER';
 
   // Auto-suggest meal type based on current time
   useEffect(() => {
@@ -112,20 +112,79 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
     }
   };
 
-  // Enhanced AI parsing with local fallback (no API dependency)
+  // Enhanced AI parsing with real API call
   const handleProcessNaturalLanguage = async () => {
     if (!naturalText.trim()) return;
     
     setIsProcessing(true);
     
     try {
-      // Always use local parsing to avoid API key issues
-      const localResult = await simulateAIParsing(naturalText);
-      setParsedData(localResult);
-      setShowParsedData(true);
+      // Try real API first
+      const response = await fetch('/api/ai/parse-multi-entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: naturalText,
+          timestamp: new Date(`${mealTime.split('T')[0] || new Date().toISOString().split('T')[0]}T${mealTime.split('T')[1] || '12:00:00'}`).toISOString()
+        })
+      });
+
+      if (response.ok) {
+        const apiResult = await response.json();
+        if (apiResult.success && apiResult.data) {
+          // Convert API result to our ParsedEntry format
+          const convertedData: ParsedEntry = {
+            foods: apiResult.data.entries
+              .filter((entry: any) => ['breakfast', 'lunch', 'dinner', 'snack', 'drinks'].includes(entry.type))
+              .map((entry: any) => ({
+                item: entry.description,
+                amount: entry.details?.quantity || '1 serving',
+                confidence: entry.confidence > 0.8 ? 'high' : entry.confidence > 0.5 ? 'medium' : 'low' as const
+              })),
+            symptoms: apiResult.data.entries
+              .filter((entry: any) => entry.type === 'symptoms')
+              .map((entry: any) => ({
+                type: entry.description,
+                severity: entry.details?.severity || 'medium',
+                timing: 'during meal'
+              })),
+            outputs: apiResult.data.entries
+              .filter((entry: any) => ['irrigation', 'gas', 'output'].includes(entry.type))
+              .map((entry: any) => ({
+                type: entry.type,
+                volume: entry.details?.volume || 'normal',
+                consistency: entry.details?.consistency || 'normal',
+                timing: 'after meal'
+              })),
+            timing: mealTime,
+            notes: naturalText,
+            suggestedMealType: apiResult.data.entries.find((e: any) => 
+              ['breakfast', 'lunch', 'dinner'].includes(e.type)
+            )?.type || suggestMealCategory(mealTime)
+          };
+          
+          setParsedData(convertedData);
+          setShowParsedData(true);
+          console.log('Real AI parsing successful:', convertedData);
+        } else {
+          throw new Error('API returned no data');
+        }
+      } else {
+        throw new Error(`API error: ${response.status}`);
+      }
     } catch (error) {
-      console.error('Parsing error:', error);
-      alert('Failed to parse entry. Please try again or use traditional mode.');
+      console.error('Real API failed, using local parsing:', error);
+      
+      // Fallback to local parsing
+      try {
+        const localResult = await simulateAIParsing(naturalText);
+        setParsedData(localResult);
+        setShowParsedData(true);
+        console.log('Local parsing successful:', localResult);
+      } catch (localError) {
+        console.error('Local parsing also failed:', localError);
+        alert('Failed to parse entry. Please try again or use traditional mode.');
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -304,45 +363,65 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
 
   // Save entry
   const saveEntry = async () => {
-    let entryData;
-    
     if (inputMode === 'natural' && parsedData) {
-      entryData = {
-        type: 'ai-parsed',
-        mealType: parsedData.suggestedMealType,
-        time: parsedData.timing,
-        foods: parsedData.foods,
-        symptoms: parsedData.symptoms,
-        outputs: parsedData.outputs,
-        notes: parsedData.notes,
-        timestamp: new Date().toISOString()
-      };
+      // For AI-parsed entries, create individual entries for each detected item
+      const entries = [];
+      
+      // Add food entries
+      for (const food of parsedData.foods) {
+        entries.push({
+          type: parsedData.suggestedMealType || 'snack',
+          description: `${food.item}${food.amount ? ' - ' + food.amount : ''}`,
+          timestamp: new Date(`${new Date().toISOString().split('T')[0]}T${parsedData.timing || mealTime}`).toISOString(),
+          confidence: food.confidence === 'high' ? 1.0 : food.confidence === 'medium' ? 0.7 : 0.5
+        });
+      }
+      
+      // Add symptom entries
+      for (const symptom of parsedData.symptoms) {
+        entries.push({
+          type: 'symptoms',
+          description: `${symptom.type}${symptom.severity ? ' - ' + symptom.severity + ' severity' : ''}`,
+          timestamp: new Date(`${new Date().toISOString().split('T')[0]}T${parsedData.timing || mealTime}`).toISOString(),
+          confidence: 0.8
+        });
+      }
+      
+      // Add output entries
+      for (const output of parsedData.outputs) {
+        entries.push({
+          type: output.type,
+          description: `${output.type}${output.volume ? ' - ' + output.volume + ' volume' : ''}${output.consistency ? ', ' + output.consistency + ' consistency' : ''}`,
+          timestamp: new Date(`${new Date().toISOString().split('T')[0]}T${parsedData.timing || mealTime}`).toISOString(),
+          confidence: 0.9
+        });
+      }
+      
+      console.log('Saving AI-parsed entries:', entries);
+      
+      if (onEntriesLogged) {
+        onEntriesLogged(entries);
+      }
+      
     } else if (inputMode === 'traditional' && selectedFoods.length > 0) {
-      entryData = {
-        type: 'manual',
-        mealType: selectedMealType,
-        time: mealTime,
-        foods: selectedFoods.map(sf => ({
-          item: sf.food.name,
-          amount: `${sf.amount} ${sf.unit}`,
-          match: sf.food,
-          confidence: 'high' as const
-        })),
-        symptoms: [],
-        outputs: [],
-        notes,
-        timestamp: new Date().toISOString()
-      };
+      // For traditional entries, create a single meal entry
+      const entries = [{
+        type: selectedMealType,
+        description: selectedFoods.map(sf => `${sf.food.name} - ${sf.amount} ${sf.unit}`).join(', ') + 
+                     (notes ? ` (Notes: ${notes})` : ''),
+        timestamp: new Date(`${new Date().toISOString().split('T')[0]}T${mealTime}`).toISOString(),
+        confidence: 1.0
+      }];
+      
+      console.log('Saving traditional entries:', entries);
+      
+      if (onEntriesLogged) {
+        onEntriesLogged(entries);
+      }
+      
     } else {
       alert('Please add some food items before saving.');
       return;
-    }
-    
-    // In a real app, this would save to database
-    console.log('Saving entry:', entryData);
-    
-    if (onEntriesLogged) {
-      onEntriesLogged([entryData]);
     }
     
     // Reset form
@@ -351,6 +430,11 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
     setShowParsedData(false);
     setSelectedFoods([]);
     setNotes('');
+    
+    // Close the modal after saving
+    if (onClose) {
+      onClose();
+    }
     
     alert('Entry saved successfully!');
   };
@@ -636,7 +720,10 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                   {searchResults.map((food) => (
                     <button
                       key={food.id}
-                      onClick={() => addFoodToMeal(food)}
+                      onClick={() => {
+                        console.log('Adding food to meal:', food);
+                        addFoodToMeal(food);
+                      }}
                       className="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors border-b border-white/10 last:border-b-0"
                     >
                       <div className="flex items-center justify-between">
@@ -653,6 +740,13 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                     </button>
                   ))}
                 </motion.div>
+              )}
+              {/* Debug info */}
+              {showFoodSearch && foodSearch.length > 1 && searchResults.length === 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-red-500/20 border border-red-500/40 rounded-lg p-4">
+                  <p className="text-red-400 text-sm">No results found for "{foodSearch}"</p>
+                  <p className="text-red-300 text-xs mt-1">Try: chai, coffee, eggs, chicken, rice</p>
+                </div>
               )}
             </AnimatePresence>
           </div>
