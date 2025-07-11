@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
+import { SmartEntryLogger } from '@/components/intelligent/SmartEntryLogger'
 
 // Entry types for flexible logging
 const ENTRY_TYPES = [
@@ -41,15 +42,9 @@ interface LogEntry {
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const router = useRouter()
-  const [showLogModal, setShowLogModal] = useState(false)
-  const [selectedEntryType, setSelectedEntryType] = useState<string>('')
-  const [entryDescription, setEntryDescription] = useState('')
-  const [selectedDateTime, setSelectedDateTime] = useState(new Date())
+  const [showSmartLogger, setShowSmartLogger] = useState(false)
   const [entries, setEntries] = useState<LogEntry[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isIntelligentMode, setIsIntelligentMode] = useState(true) // New: toggle between modes
-  const [multiCategoryText, setMultiCategoryText] = useState('') // New: for intelligent parsing
 
   // Load entries when component mounts
   useEffect(() => {
@@ -57,7 +52,12 @@ export default function Dashboard() {
   }, [user])
 
   const handleSignOut = async () => {
-    await signOut()
+    try {
+      await signOut()
+      router.push('/')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
 
   const loadEntries = async () => {
@@ -87,57 +87,20 @@ export default function Dashboard() {
     }
   }
 
-  const handleLogEntry = async () => {
-    if (!selectedEntryType || !entryDescription.trim() || !user) return
-
-    try {
-      setLoading(true)
-      
-      const response = await fetch('/api/entries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: selectedEntryType,
-          description: entryDescription,
-          timestamp: selectedDateTime.toISOString(),
-          userId: user.id
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Transform the new entry to match our LogEntry interface
-        const newEntry: LogEntry = {
-          id: data.data.id,
-          type: data.data.type,
-          description: data.data.description,
-          timestamp: new Date(data.data.timestamp),
-          aiFlags: data.data.ai_flags || [],
-          riskLevel: data.data.risk_level || 'low'
-        }
-
-        setEntries(prev => [newEntry, ...prev])
-        setShowLogModal(false)
-        setSelectedEntryType('')
-        setEntryDescription('')
-        setSelectedDateTime(new Date())
-      } else {
-        alert('Failed to save entry: ' + data.error)
-      }
-    } catch (error) {
-      console.error('Error saving entry:', error)
-      alert('Error saving entry. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  const handleEntriesLogged = async (newEntries: any[]) => {
+    // Convert the entries and add them to the list
+    const transformedEntries: LogEntry[] = newEntries.map((entry: any) => ({
+      id: Date.now() + Math.random().toString(), // temporary ID
+      type: entry.type,
+      description: entry.description,
+      timestamp: new Date(entry.timestamp),
+      aiFlags: [],
+      riskLevel: 'low'
+    }))
+    
+    setEntries(prev => [...transformedEntries, ...prev])
+    setShowSmartLogger(false)
   }
-
-  const filteredEntryTypes = ENTRY_TYPES.filter(type => 
-    type.label.toLowerCase().includes(searchTerm.toLowerCase())
-  )
 
   const formatDateTime = (date: Date) => {
     return date.toLocaleString('en-US', {
@@ -180,7 +143,7 @@ export default function Dashboard() {
         {/* Quick Log Button */}
         <div className="mb-8">
           <button
-            onClick={() => setShowLogModal(true)}
+            onClick={() => setShowSmartLogger(true)}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 px-6 rounded-2xl font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center gap-2 mb-4"
           >
             <span>+</span>
@@ -278,164 +241,12 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Log Modal */}
-        {showLogModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-white">Log Entry</h2>
-                <button
-                  onClick={() => setShowLogModal(false)}
-                  className="text-white/60 hover:text-white text-2xl"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Mode Toggle */}
-              <div className="mb-6">
-                <div className="flex bg-white/10 rounded-lg p-1">
-                  <button
-                    onClick={() => setIsIntelligentMode(true)}
-                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                      isIntelligentMode 
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    🧠 Intelligent Mode (Recommended)
-                  </button>
-                  <button
-                    onClick={() => setIsIntelligentMode(false)}
-                    className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                      !isIntelligentMode 
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' 
-                        : 'text-white/60 hover:text-white'
-                    }`}
-                  >
-                    📝 Traditional Mode
-                  </button>
-                </div>
-                <p className="text-white/60 text-xs mt-2">
-                  {isIntelligentMode 
-                    ? 'Describe everything in natural language - AI will auto-categorize into meals, drinks, irrigation, etc.' 
-                    : 'Select specific category and log individual entries'
-                  }
-                </p>
-              </div>
-
-              {/* Intelligent Mode */}
-              {isIntelligentMode ? (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-white font-semibold mb-3">
-                      🌟 Describe your day naturally:
-                    </label>
-                    <textarea
-                      value={multiCategoryText}
-                      onChange={(e) => setMultiCategoryText(e.target.value)}
-                      placeholder="Example: I had scrambled eggs with 4 eggs, cheese, and peppers. Before that, I had a protein shake. At 8AM I did my irrigation which was difficult but I emptied properly."
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 h-40 resize-none"
-                    />
-                    <p className="text-white/40 text-xs mt-2">
-                      💡 AI will automatically create separate entries for meals, drinks, irrigation, symptoms, etc.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Traditional Entry Type Selection */}
-                  <div className="mb-6">
-                    <label className="block text-white font-semibold mb-3">What would you like to log?</label>
-                    <input
-                      type="text"
-                      placeholder="Search entry types..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/40 mb-4"
-                    />
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                      {filteredEntryTypes.map((type) => (
-                        <button
-                          key={type.key}
-                          onClick={() => setSelectedEntryType(type.key)}
-                          className={`p-3 rounded-lg text-left transition-all duration-200 ${
-                            selectedEntryType === type.key
-                              ? `bg-gradient-to-r ${type.color} text-white`
-                              : 'bg-white/5 text-white/80 hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="text-xl mb-1">{type.icon}</div>
-                          <div className="text-sm font-medium">{type.label}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  {selectedEntryType && (
-                    <div className="mb-6">
-                      <label className="block text-white font-semibold mb-3">
-                        Describe in natural language:
-                      </label>
-                      <textarea
-                        value={entryDescription}
-                        onChange={(e) => setEntryDescription(e.target.value)}
-                        placeholder="e.g., I had a bowl of Amritsari paneer bhurji with 2 chapatis and a glass of milk"
-                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 h-32 resize-none"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Date/Time Selection */}
-              {selectedEntryType && (
-                <div className="mb-6">
-                  <label className="block text-white font-semibold mb-3">When did this happen?</label>
-                  <input
-                    type="datetime-local"
-                    value={selectedDateTime.toISOString().slice(0, 16)}
-                    onChange={(e) => {
-                      const newDate = new Date(e.target.value);
-                      if (!isNaN(newDate.getTime())) {
-                        setSelectedDateTime(newDate);
-                      }
-                    }}
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white [color-scheme:dark]"
-                    step="60"
-                  />
-                  <p className="text-white/60 text-sm mt-1">
-                    Current: {selectedDateTime.toLocaleString()}
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowLogModal(false)}
-                  className="flex-1 bg-white/10 text-white py-3 rounded-lg hover:bg-white/20 transition-all duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleLogEntry}
-                  disabled={!selectedEntryType || !entryDescription.trim() || loading}
-                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Analyzing...
-                    </>
-                  ) : (
-                    'Log Entry'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
+        {/* Smart Entry Logger */}
+        {showSmartLogger && (
+          <SmartEntryLogger
+            onEntriesLogged={handleEntriesLogged}
+            onClose={() => setShowSmartLogger(false)}
+          />
         )}
       </div>
     </div>

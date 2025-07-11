@@ -12,6 +12,9 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState('')
   const { resetPassword } = useAuth()
 
+  // Check if we're in demo mode
+  const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('supabase.co');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -22,6 +25,15 @@ export default function ResetPassword() {
       setError('Please enter your email address')
       setLoading(false)
       return
+    }
+
+    if (isDemoMode) {
+      // Demo mode simulation
+      setTimeout(() => {
+        setSuccess('Demo: Password reset email sent! (This is a demo - no actual email was sent)')
+        setLoading(false)
+      }, 1500);
+      return;
     }
 
     const { error } = await resetPassword(email)
@@ -59,6 +71,12 @@ export default function ResetPassword() {
             <p className="text-white/70">
               Enter your email to receive a password reset link
             </p>
+            {isDemoMode && (
+              <div className="mt-3 bg-blue-500/20 backdrop-blur-sm border border-blue-500/50 rounded-lg p-3">
+                <p className="text-blue-200 text-sm font-medium">🎭 Demo Mode Active</p>
+                <p className="text-blue-200/80 text-xs mt-1">No actual emails will be sent</p>
+              </div>
+            )}
           </div>
 
           {error && (

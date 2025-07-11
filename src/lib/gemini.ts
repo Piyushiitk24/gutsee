@@ -419,91 +419,123 @@ export async function parseMultiCategoryEntry(description: string, baseTimestamp
 }> {
   try {
     const prompt = `
-You are an expert colostomy management AI. Parse this natural language description into separate health entries.
+You are an expert colostomy management AI assistant. Parse this natural language description into separate, detailed health entries for a stoma tracker app.
 
 User Description: "${description}"
 Base Timestamp: ${baseTimestamp.toISOString()}
 
-CRITICAL: Extract and categorize ALL mentioned activities into separate entries. Look for:
+INSTRUCTIONS:
+1. Extract EVERY mentioned activity into separate entries
+2. Infer timing from context (e.g., "before that" = earlier time, "at 8am" = specific time, "later" = later time)
+3. Extract detailed information for each category
+4. Be very specific with ingredients, quantities, and characteristics
 
-1. MEALS (breakfast, lunch, dinner, snack):
-   - Extract ingredients, quantities, cooking methods
-   - Infer timing if mentioned (e.g., "at 7am", "before", "after")
+CATEGORIES TO DETECT:
+- MEALS: breakfast, lunch, dinner, snack (extract ingredients, quantities, cooking methods)
+- DRINKS: any beverages, protein shakes, water, coffee (extract type, quantity, timing)
+- IRRIGATION: colostomy irrigation (extract quality, difficulty, completion, water flow)
+- GAS: gas production, flatulence (extract timing, intensity, triggers)
+- BOWEL: bowel movements, output (extract consistency, volume, timing)
+- MEDICATION: pills, supplements (extract names, dosages, timing)
+- SYMPTOMS: pain, discomfort, energy (extract severity, location, timing)
 
-2. DRINKS (drinks, beverages, supplements):
-   - Protein shakes, water, coffee, etc.
-   - Extract quantities and timing
+For MEALS, extract:
+- Exact ingredients with quantities
+- Cooking method
+- Meal timing
+- Portion sizes
 
-3. IRRIGATION (irrigation, colostomy care):
-   - Extract quality, timing, difficulties, completeness
-   - Note water flow, emptying success, comfort level
+For IRRIGATION, extract:
+- Water flow quality (smooth/difficult/blocked)
+- Completion level (empty/partial/poor)
+- Comfort level
+- Duration if mentioned
+- Any issues
 
-4. BOWEL/GAS (motion, gas, output):
-   - Extract timing, consistency, volume, characteristics
+For GAS/BOWEL, extract:
+- Timing relative to meals
+- Intensity/volume
+- Characteristics
+- Triggers
 
-5. MEDICATION/SUPPLEMENTS:
-   - Extract names, dosages, timing
-
-6. SYMPTOMS:
-   - Pain, discomfort, mood, energy levels
-
-For each detected category, provide:
-- type: exact category name (breakfast/lunch/dinner/snack/drinks/irrigation/gas/bowel/medication/supplements/symptoms)
-- description: detailed description for that category only
-- timestamp: estimated time (adjust from base timestamp based on mentioned timing)
-- confidence: 0-1 how confident you are
-- details: structured data for that category
-
-Format response as JSON:
+Response Format (JSON):
 {
   "entries": [
     {
-      "type": "breakfast",
-      "description": "Scrambled eggs with 4 eggs, 2 green chilies, grated cheese, bell pepper, 2 black peppers, cooked in 1 spoon butter, with 2 multigrain toasts",
-      "timestamp": "2025-07-10T07:30:00.000Z",
+      "type": "drinks",
+      "description": "Protein shake - 1 scoop whey protein",
+      "timestamp": "2025-07-10T07:00:00.000Z",
       "confidence": 0.95,
       "details": {
-        "ingredients": ["eggs (4)", "green chilies (2)", "cheese", "bell pepper", "black pepper (2)", "butter (1 spoon)", "multigrain toast (2)"],
-        "cookingMethod": "scrambled",
-        "mealType": "breakfast"
+        "beverage": "protein shake",
+        "ingredient": "whey protein",
+        "quantity": "1 scoop",
+        "timing": "before breakfast",
+        "estimatedVolume": "250ml"
       }
     },
     {
-      "type": "drinks", 
-      "description": "Protein shake - 1 scoop",
-      "timestamp": "2025-07-10T07:00:00.000Z",
-      "confidence": 0.9,
+      "type": "breakfast", 
+      "description": "Scrambled eggs with 4 eggs, 2 green chilies, grated cheese, bell pepper, 2 black peppers, cooked in 1 spoon butter, served with 2 multigrain toasts",
+      "timestamp": "2025-07-10T07:30:00.000Z",
+      "confidence": 0.98,
       "details": {
-        "beverage": "protein shake",
-        "quantity": "1 scoop",
-        "timing": "before breakfast"
+        "mealType": "breakfast",
+        "cookingMethod": "scrambled",
+        "ingredients": [
+          "eggs (4 pieces)",
+          "green chilies (2 pieces)", 
+          "grated cheese",
+          "bell pepper (small amount)",
+          "black pepper (2 pieces)",
+          "butter (1 spoon)",
+          "multigrain toast (2 slices)"
+        ],
+        "primaryProtein": "eggs",
+        "estimatedCalories": 650,
+        "riskAssessment": "low-medium"
       }
     },
     {
       "type": "irrigation",
-      "description": "Irrigation at 8AM - not very smooth, water not going inside easily, but emptied properly",
+      "description": "Morning irrigation at 8AM - water flow was difficult, not going inside easily, but achieved good emptying",
       "timestamp": "2025-07-10T08:00:00.000Z", 
-      "confidence": 0.95,
+      "confidence": 0.96,
       "details": {
-        "quality": "difficult",
-        "waterFlow": "poor",
+        "timeOfDay": "morning",
+        "waterFlow": "difficult",
+        "waterFlowRating": "poor",
         "completion": "good",
-        "notes": "not smooth, water resistance but emptied properly"
+        "completionRating": "high",
+        "issues": ["water resistance", "flow problems"],
+        "outcome": "successful emptying",
+        "userFeeling": "satisfied with emptying"
       }
     }
   ],
-  "summary": "Parsed 3 entries: breakfast meal, protein drink, and irrigation session",
-  "confidence": 0.93
+  "summary": "Detected 3 distinct health activities: morning protein drink (7am), hearty breakfast meal (7:30am), and irrigation session (8am)",
+  "confidence": 0.96
 }
 
-EXTRACT EVERYTHING mentioned. Don't miss any category. Be thorough and precise.
+CRITICAL REQUIREMENTS:
+- Extract ALL mentioned activities, don't miss anything
+- Infer realistic timestamps based on context and meal timing
+- Provide detailed ingredient breakdown for meals
+- Include specific characteristics for irrigation and symptoms
+- Use high confidence (0.9+) only when details are very clear
+- If timing is unclear, make reasonable assumptions based on typical daily patterns
+
+Analyze the description thoroughly and extract every possible health-related activity.
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    const parsed = JSON.parse(text);
+    // Clean up the JSON response (remove any markdown formatting)
+    const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
+    
+    const parsed = JSON.parse(cleanedText);
     
     // Convert timestamp strings back to Date objects
     if (parsed.entries) {
@@ -516,16 +548,52 @@ EXTRACT EVERYTHING mentioned. Don't miss any category. Be thorough and precise.
     return parsed;
   } catch (error) {
     console.error('Error parsing multi-category entry:', error);
-    // Fallback: create a single entry
-    return {
-      entries: [{
-        type: 'breakfast', // default fallback
+    
+    // Enhanced fallback: try to extract at least basic categories
+    const fallbackEntries = [];
+    const desc = description.toLowerCase();
+    
+    // Simple keyword detection for fallback
+    if (desc.includes('egg') || desc.includes('breakfast') || desc.includes('meal')) {
+      fallbackEntries.push({
+        type: 'breakfast',
         description: description,
         timestamp: baseTimestamp,
+        confidence: 0.6
+      });
+    }
+    
+    if (desc.includes('protein') || desc.includes('shake') || desc.includes('drink')) {
+      fallbackEntries.push({
+        type: 'drinks',
+        description: 'Mentioned beverage/drink',
+        timestamp: new Date(baseTimestamp.getTime() - 30 * 60 * 1000), // 30 min earlier
         confidence: 0.5
-      }],
-      summary: 'Could not parse multiple categories, created single entry',
-      confidence: 0.5
+      });
+    }
+    
+    if (desc.includes('irrigation') || desc.includes('8am') || desc.includes('morning')) {
+      fallbackEntries.push({
+        type: 'irrigation',
+        description: 'Morning irrigation mentioned',
+        timestamp: new Date(baseTimestamp.getTime() + 30 * 60 * 1000), // 30 min later
+        confidence: 0.5
+      });
+    }
+    
+    if (fallbackEntries.length === 0) {
+      fallbackEntries.push({
+        type: 'breakfast',
+        description: description,
+        timestamp: baseTimestamp,
+        confidence: 0.3
+      });
+    }
+    
+    return {
+      entries: fallbackEntries,
+      summary: `Fallback parsing: created ${fallbackEntries.length} entries`,
+      confidence: 0.4
     };
   }
 }
