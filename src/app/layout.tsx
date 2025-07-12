@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GutSee | Smart Stoma Health Tracking",
-  description: "AI-powered health tracking for stoma patients. Monitor diet, symptoms, and get personalized insights with smart recommendations.",
-  keywords: ["colostomy", "stoma", "health", "tracking", "medical", "management", "AI", "smart"],
+  title: "GutSee | Smart Gut Health Tracking",
+  description: "AI-powered health tracking for gut patients. Monitor diet, symptoms, and get personalized insights with smart recommendations.",
+  keywords: ["gut", "health", "tracking", "medical", "management", "AI", "smart"],
   authors: [{ name: "GutSee Team" }],
   openGraph: {
-    title: "GutSee | Smart Stoma Health Tracking",
-    description: "AI-powered health tracking for stoma patients with smart insights",
+    title: "GutSee | Smart Gut Health Tracking",
+    description: "AI-powered health tracking for gut patients with smart insights",
     type: "website",
   },
 };

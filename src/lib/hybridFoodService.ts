@@ -1,6 +1,6 @@
 /**
  * Hybrid Food Database System
- * Combines Open Food Facts API with specialized stoma-tracking data
+ * Combines Open Food Facts API with specialized gut-tracking data
  */
 
 export interface BaseFoodData {
@@ -24,13 +24,13 @@ export interface BaseFoodData {
   source: 'openfoodfacts' | 'usda' | 'local';
 }
 
-export interface StomaSpecificData {
+export interface GutSpecificData {
   fodmapLevel: 'low' | 'medium' | 'high';
   fiberContent: 'low' | 'medium' | 'high';
   spiceLevel: 'none' | 'mild' | 'medium' | 'hot';
   processingLevel: 'whole' | 'minimally-processed' | 'processed' | 'ultra-processed';
   commonTriggers: string[];
-  stomaFriendliness: 'excellent' | 'good' | 'moderate' | 'caution' | 'avoid';
+  gutFriendliness: 'excellent' | 'good' | 'moderate' | 'caution' | 'avoid';
   digestibilityScore: number; // 1-10 scale
   gasProduction: 'low' | 'medium' | 'high';
   irrigationImpact: 'none' | 'slight' | 'moderate' | 'significant';
@@ -40,7 +40,7 @@ export interface StomaSpecificData {
 }
 
 export interface EnhancedFoodItem extends BaseFoodData {
-  stomaData?: StomaSpecificData;
+  gutData?: GutSpecificData;
   userExperiences?: {
     avgRating: number;
     totalReviews: number;
@@ -139,8 +139,8 @@ class OpenFoodFactsService {
   }
 }
 
-// Specialized Stoma Data Service
-class StomaDataService {
+// Specialized Gut Data Service
+class GutDataService {
   private supabase: any; // Initialize with your Supabase client
 
   constructor(supabaseClient: any) {
@@ -148,30 +148,30 @@ class StomaDataService {
   }
 
   // Get stoma-specific data for a food item
-  async getStomaData(foodId: string, foodName: string): Promise<StomaSpecificData | null> {
+  async getGutData(foodId: string, foodName: string): Promise<GutSpecificData | null> {
     try {
       // First, try to get from Supabase database
-      const { data: stomaData, error } = await this.supabase
+      const { data: gutData, error } = await this.supabase
         .from('stoma_food_data')
         .select('*')
         .or(`food_id.eq.${foodId},food_name.ilike.%${foodName}%`)
         .single();
 
-      if (stomaData && !error) {
-        return stomaData;
+      if (gutData && !error) {
+        return gutData;
       }
 
       // Fallback to local curated data
-      return this.getLocalStomaData(foodName);
+      return this.getLocalGutData(foodName);
     } catch (error) {
-      console.error('Error fetching stoma data:', error);
-      return this.getLocalStomaData(foodName);
+      console.error('Error fetching gut data:', error);
+      return this.getLocalGutData(foodName);
     }
   }
 
   // Local curated stoma data for common foods
-  private getLocalStomaData(foodName: string): StomaSpecificData | null {
-    const localStomaDatabase: { [key: string]: StomaSpecificData } = {
+  private getLocalGutData(foodName: string): GutSpecificData | null {
+    const localGutDatabase: { [key: string]: GutSpecificData } = {
       // High-fiber foods (generally require caution)
       'brown rice': {
         fodmapLevel: 'low',
@@ -179,7 +179,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'minimally-processed',
         commonTriggers: ['high fiber'],
-        stomaFriendliness: 'moderate',
+        gutFriendliness: 'moderate',
         digestibilityScore: 6,
         gasProduction: 'medium',
         irrigationImpact: 'moderate',
@@ -195,7 +195,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'minimally-processed',
         commonTriggers: ['lactose'],
-        stomaFriendliness: 'caution',
+        gutFriendliness: 'caution',
         digestibilityScore: 5,
         gasProduction: 'high',
         irrigationImpact: 'moderate',
@@ -211,7 +211,7 @@ class StomaDataService {
         spiceLevel: 'hot',
         processingLevel: 'whole',
         commonTriggers: ['capsaicin', 'spice'],
-        stomaFriendliness: 'avoid',
+        gutFriendliness: 'avoid',
         digestibilityScore: 3,
         gasProduction: 'low',
         irrigationImpact: 'significant',
@@ -227,7 +227,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'minimally-processed',
         commonTriggers: [],
-        stomaFriendliness: 'excellent',
+        gutFriendliness: 'excellent',
         digestibilityScore: 9,
         gasProduction: 'low',
         irrigationImpact: 'none',
@@ -243,7 +243,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'processed',
         commonTriggers: [],
-        stomaFriendliness: 'excellent',
+        gutFriendliness: 'excellent',
         digestibilityScore: 9,
         gasProduction: 'low',
         irrigationImpact: 'none',
@@ -259,7 +259,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'whole',
         commonTriggers: ['sulfur compounds', 'high fiber'],
-        stomaFriendliness: 'avoid',
+        gutFriendliness: 'avoid',
         digestibilityScore: 4,
         gasProduction: 'high',
         irrigationImpact: 'moderate',
@@ -275,7 +275,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'minimally-processed',
         commonTriggers: ['gluten', 'fiber'],
-        stomaFriendliness: 'good',
+        gutFriendliness: 'good',
         digestibilityScore: 7,
         gasProduction: 'medium',
         irrigationImpact: 'slight',
@@ -290,7 +290,7 @@ class StomaDataService {
         spiceLevel: 'mild',
         processingLevel: 'minimally-processed',
         commonTriggers: ['oligosaccharides', 'fiber'],
-        stomaFriendliness: 'moderate',
+        gutFriendliness: 'moderate',
         digestibilityScore: 6,
         gasProduction: 'high',
         irrigationImpact: 'moderate',
@@ -304,23 +304,23 @@ class StomaDataService {
     const normalizedName = foodName.toLowerCase().trim();
     
     // Direct match
-    if (localStomaDatabase[normalizedName]) {
-      return localStomaDatabase[normalizedName];
+    if (localGutDatabase[normalizedName]) {
+      return localGutDatabase[normalizedName];
     }
 
     // Partial matching
-    for (const [key, value] of Object.entries(localStomaDatabase)) {
+    for (const [key, value] of Object.entries(localGutDatabase)) {
       if (normalizedName.includes(key) || key.includes(normalizedName)) {
         return value;
       }
     }
 
     // Category-based inference for unknown foods
-    return this.inferStomaData(foodName);
+    return this.inferGutData(foodName);
   }
 
   // Intelligent inference for unknown foods based on categories/ingredients
-  private inferStomaData(foodName: string): StomaSpecificData {
+  private inferGutData(foodName: string): GutSpecificData {
     const name = foodName.toLowerCase();
     
     // Spicy food patterns
@@ -331,7 +331,7 @@ class StomaDataService {
         spiceLevel: 'hot',
         processingLevel: 'minimally-processed',
         commonTriggers: ['spice', 'capsaicin'],
-        stomaFriendliness: 'caution',
+        gutFriendliness: 'caution',
         digestibilityScore: 4,
         gasProduction: 'medium',
         irrigationImpact: 'moderate',
@@ -348,7 +348,7 @@ class StomaDataService {
         spiceLevel: 'none',
         processingLevel: 'minimally-processed',
         commonTriggers: ['high fiber'],
-        stomaFriendliness: 'moderate',
+        gutFriendliness: 'moderate',
         digestibilityScore: 5,
         gasProduction: 'medium',
         irrigationImpact: 'moderate',
@@ -365,7 +365,7 @@ class StomaDataService {
         spiceLevel: 'mild',
         processingLevel: 'ultra-processed',
         commonTriggers: ['high fat', 'additives'],
-        stomaFriendliness: 'caution',
+        gutFriendliness: 'caution',
         digestibilityScore: 4,
         gasProduction: 'medium',
         irrigationImpact: 'moderate',
@@ -381,7 +381,7 @@ class StomaDataService {
       spiceLevel: 'none',
       processingLevel: 'minimally-processed',
       commonTriggers: [],
-      stomaFriendliness: 'good',
+      gutFriendliness: 'good',
       digestibilityScore: 7,
       gasProduction: 'low',
       irrigationImpact: 'slight',
@@ -419,11 +419,11 @@ class StomaDataService {
 // Main Hybrid Food Service
 export class HybridFoodService {
   private openFoodFacts: OpenFoodFactsService;
-  private stomaData: StomaDataService;
+  private gutData: GutDataService;
 
   constructor(supabaseClient: any) {
     this.openFoodFacts = new OpenFoodFactsService();
-    this.stomaData = new StomaDataService(supabaseClient);
+    this.gutData = new GutDataService(supabaseClient);
   }
 
   async searchFoods(query: string, limit = 20): Promise<EnhancedFoodItem[]> {
@@ -433,11 +433,11 @@ export class HybridFoodService {
     // Enhance each food item with stoma-specific data
     const enhancedFoods = await Promise.all(
       baseFoods.map(async (food) => {
-        const stomaData = await this.stomaData.getStomaData(food.id, food.name);
+        const gutData = await this.gutData.getGutData(food.id, food.name);
         
         return {
           ...food,
-          stomaData: stomaData || undefined,
+          gutData: gutData || undefined,
           lastUpdated: new Date()
         } as EnhancedFoodItem;
       })
@@ -445,8 +445,8 @@ export class HybridFoodService {
 
     // Sort by stoma-friendliness
     return enhancedFoods.sort((a, b) => {
-      const scoreA = this.getStomaFriendlinessScore(a.stomaData);
-      const scoreB = this.getStomaFriendlinessScore(b.stomaData);
+      const scoreA = this.getGutFriendlinessScore(a.gutData);
+      const scoreB = this.getGutFriendlinessScore(b.gutData);
       return scoreB - scoreA;
     });
   }
@@ -455,17 +455,17 @@ export class HybridFoodService {
     const baseFood = await this.openFoodFacts.getProductByBarcode(barcode);
     if (!baseFood) return null;
 
-    const stomaData = await this.stomaData.getStomaData(baseFood.id, baseFood.name);
+    const gutData = await this.gutData.getGutData(baseFood.id, baseFood.name);
     
     return {
       ...baseFood,
-      stomaData: stomaData || undefined,
+      gutData: gutData || undefined,
       lastUpdated: new Date()
     };
   }
 
-  private getStomaFriendlinessScore(stomaData?: StomaSpecificData): number {
-    if (!stomaData) return 5;
+  private getGutFriendlinessScore(gutData?: GutSpecificData): number {
+    if (!gutData) return 5;
     
     const friendlinessScores = {
       'excellent': 10,
@@ -475,7 +475,7 @@ export class HybridFoodService {
       'avoid': 2
     };
     
-    return friendlinessScores[stomaData.stomaFriendliness] || 5;
+    return friendlinessScores[gutData.gutFriendliness] || 5;
   }
 }
 

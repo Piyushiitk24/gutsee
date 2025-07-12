@@ -1,11 +1,11 @@
-// Types for the Stoma Tracker application
+// Types for the Gut Tracker application
 export interface User {
   id: string;
   email: string;
   name?: string;
   createdAt: Date;
   updatedAt: Date;
-  colostomyDate?: Date;
+  gutDate?: Date;
   medicalNotes?: string;
 }
 
@@ -63,7 +63,7 @@ export interface MealItem {
   food?: Food;
 }
 
-export interface StomaOutput {
+export interface GutOutput {
   id: string;
   timestamp: Date;
   volume?: number;

@@ -53,7 +53,7 @@ export type Database = {
           name: string | null
           created_at: string
           updated_at: string
-          colostomy_date: string | null
+          gut_date: string | null
           medical_notes: string | null
         }
         Insert: {
@@ -62,7 +62,7 @@ export type Database = {
           name?: string | null
           created_at?: string
           updated_at?: string
-          colostomy_date?: string | null
+          gut_date?: string | null
           medical_notes?: string | null
         }
         Update: {
@@ -71,7 +71,7 @@ export type Database = {
           name?: string | null
           created_at?: string
           updated_at?: string
-          colostomy_date?: string | null
+          gut_date?: string | null
           medical_notes?: string | null
         }
       }
@@ -175,7 +175,7 @@ export type Database = {
           updated_at?: string
         }
       }
-      stoma_outputs: {
+      gut_outputs: {
         Row: {
           id: string
           timestamp: string

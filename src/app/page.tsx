@@ -44,7 +44,7 @@ export default function Home() {
               className="text-6xl font-bold text-white mb-4 drop-shadow-lg"
             >
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Stoma Assistant
+                Gut Assistant
               </span>
             </motion.h1>
             <motion.p 
@@ -115,7 +115,7 @@ export default function Home() {
                 <p className="text-white/80 text-lg mb-8 leading-relaxed">
                   Unlike traditional health apps, our assistant learns from your patterns, provides contextual insights, 
                   and proactively guides you toward better health outcomes. It&apos;s like having a personal health coach 
-                  that understands your unique colostomy journey.
+                  that understands your unique gut journey.
                 </p>
                 <div className="flex justify-center gap-4">
                   <Link

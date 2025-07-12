@@ -1,6 +1,6 @@
-# 🩺 Stoma Tracker
+# 🩺 Gut Tracker
 
-A comprehensive health tracking application for stoma patients, featuring intelligent food logging, AI-powered analysis, and professional medical insights.
+A comprehensive health tracking application for gut health management, featuring intelligent food logging, AI-powered analysis, and professional medical insights.
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.5-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -27,7 +27,7 @@ A comprehensive health tracking application for stoma patients, featuring intell
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd stoma-tracker
+cd gut-tracker
 
 # Install dependencies
 npm install
@@ -45,7 +45,7 @@ Visit `http://localhost:3000` to see the application.
 ## 📁 Project Structure
 
 ```
-stoma-tracker/
+gut-tracker/
 ├── docs/                          # Documentation files
 │   ├── SETUP_INSTRUCTIONS.md     # Detailed setup guide
 │   ├── GEMINI_AI_INTEGRATION.md  # AI integration details
@@ -111,7 +111,7 @@ See `docs/SUPABASE_SETUP.md` for detailed instructions.
 
 ### Hybrid Food Service
 - **Location**: `src/lib/hybridFoodService.ts`  
-- **Features**: Combines Open Food Facts API with stoma-specific data
+- **Features**: Combines Open Food Facts API with gut-specific data
 - **Coverage**: 3+ million foods with medical insights
 
 ### Dashboard Overview
@@ -139,7 +139,7 @@ The app uses Supabase Auth with support for:
 ### Primary Sources
 1. **Open Food Facts API** (3+ million foods)
 2. **USDA FoodData Central** (600,000+ foods)
-3. **Local curated database** (stoma-specific foods)
+3. **Local curated database** (gut-specific foods)
 
 ### Features
 - Real-time food search
@@ -147,7 +147,7 @@ The app uses Supabase Auth with support for:
 - Nutritional data
 - Allergen information
 - Barcode lookup
-- Stoma-specific safety ratings
+- Gut-specific safety ratings
 
 ## 📊 Analytics & Insights
 
@@ -214,4 +214,4 @@ For issues and questions:
 
 ---
 
-**Built with ❤️ for the stoma community**
+**Built with ❤️ for the gut health community**

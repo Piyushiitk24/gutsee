@@ -21,22 +21,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Get stoma outputs from database
+    // Get gut outputs from database
     const outputs = await db.getStomaOutputs(user.id, limit);
 
     const response: ApiResponse<typeof outputs> = {
       success: true,
       data: outputs,
-      message: 'Stoma outputs retrieved successfully'
+      message: 'Gut outputs retrieved successfully'
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching stoma outputs:', error);
+    console.error('Error fetching gut outputs:', error);
     
     const response: ApiResponse<any> = {
       success: false,
-      error: 'Failed to fetch stoma outputs'
+      error: 'Failed to fetch gut outputs'
     };
 
     return NextResponse.json(response, { status: 500 });
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Create stoma output in database
+    // Create gut output in database
     const outputData = {
       ...body,
       user_id: user.id,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     if (!output) {
       return NextResponse.json(
-        { success: false, error: 'Failed to create stoma output' },
+        { success: false, error: 'Failed to create gut output' },
         { status: 500 }
       );
     }
@@ -78,16 +78,16 @@ export async function POST(request: NextRequest) {
     const response: ApiResponse<typeof output> = {
       success: true,
       data: output,
-      message: 'Stoma output created successfully'
+      message: 'Gut output created successfully'
     };
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error creating stoma output:', error);
+    console.error('Error creating gut output:', error);
     
     const response: ApiResponse<any> = {
       success: false,
-      error: 'Failed to create stoma output'
+      error: 'Failed to create gut output'
     };
 
     return NextResponse.json(response, { status: 500 });

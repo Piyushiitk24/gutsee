@@ -24,7 +24,7 @@ export default function AuthPage() {
   const signInWithGoogle = async () => {
     if (isDemoMode) {
       // In demo mode, just create a demo user
-      const { error } = await signIn('demo@stomatracker.com', 'demo123');
+      const { error } = await signIn('demo@guttracker.com', 'demo123');
       if (!error) {
         router.push('/dashboard');
       }
@@ -114,7 +114,7 @@ export default function AuthPage() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">GutSee</h1>
-            <p className="text-white/70">AI-powered stoma health tracking</p>
+            <p className="text-white/70">AI-powered gut health tracking</p>
             {isDemoMode && (
               <div className="mt-4 bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/50 rounded-lg p-3">
                 <p className="text-emerald-200 text-sm font-medium">🎯 Demo Mode Active</p>

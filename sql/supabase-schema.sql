@@ -1,4 +1,4 @@
--- Supabase Database Schema for Stoma Tracker
+-- Supabase Database Schema for Gut Tracker
 -- This file contains the complete database schema migration from Prisma to Supabase
 
 -- Enable Row Level Security (RLS) for all tables
@@ -19,7 +19,7 @@ CREATE TABLE users (
   name VARCHAR(255),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  colostomy_date DATE,
+  gut_date DATE,
   medical_notes TEXT
 );
 

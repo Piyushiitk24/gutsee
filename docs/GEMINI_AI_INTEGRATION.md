@@ -1,8 +1,8 @@
-# Gemini AI Integration - Stoma Tracker
+# Gemini AI Integration - Gut Tracker
 
 ## 🚀 **Integration Complete!**
 
-The Stoma Tracker app has been successfully enhanced with Google Gemini AI integration for intelligent ingredient analysis, gut health insights, and personalized recommendations.
+The Gut Tracker app has been successfully enhanced with Google Gemini AI integration for intelligent ingredient analysis, gut health insights, and personalized recommendations.
 
 ---
 
@@ -17,7 +17,7 @@ GOOGLE_AI_API_KEY=your_gemini_api_key_here
 ```
 
 ### **Core Service:** `/src/lib/gemini.ts`
-Comprehensive Gemini AI service with specialized functions for colostomy care:
+Comprehensive Gemini AI service with specialized functions for gut care:
 
 #### **Key Functions:**
 1. **`analyzeIngredients(ingredients[])`** - Analyzes food ingredients for gut health impact
@@ -57,7 +57,7 @@ Comprehensive Gemini AI service with specialized functions for colostomy care:
 ### **4. Predictive Meal Planning**
 - **Personalized Suggestions** based on success history
 - **Timing Optimization** for better digestion
-- **Portion Size Guidance** specific to colostomy care
+- **Portion Size Guidance** specific to gut care
 - **Alternative Ingredient Suggestions** for problematic foods
 
 ---
@@ -107,17 +107,17 @@ Pre-configured test scenarios in the Analytics tab:
 
 ---
 
-## 🎯 **Specialized Colostomy Care Focus**
+## 🎯 **Specialized Gut Care Focus**
 
 ### **Gut Health Intelligence:**
 - **Gas Production Prediction** with specific ingredient flagging
 - **Digestive Comfort Assessment** based on fiber content and preparation
-- **Stoma Output Impact** analysis for consistency changes
+- **Gut Output Impact** analysis for consistency changes
 - **Timing Recommendations** for irrigation schedules
 
 ### **Safety-First Approach:**
 - **Conservative Risk Assessment** erring on side of caution
-- **Evidence-Based Recommendations** grounded in colostomy care best practices
+- **Evidence-Based Recommendations** grounded in gut care best practices
 - **Alternative Suggestions** for potentially problematic ingredients
 - **Healthcare Provider Integration** ready for professional review
 
@@ -139,7 +139,7 @@ Pre-configured test scenarios in the Analytics tab:
       "ingredient": "beans",
       "gutBehavior": "gas-producing",
       "riskLevel": "high",
-      "description": "High fiber content may increase gas and stoma output"
+      "description": "High fiber content may increase gas and gut output"
     }
   ],
   "overallRisk": "medium",
@@ -148,7 +148,7 @@ Pre-configured test scenarios in the Analytics tab:
   "recommendations": [
     "Consider smaller portions if including beans",
     "Pair with easily digestible foods",
-    "Monitor stoma output for 2-4 hours after eating"
+    "Monitor gut output for 2-4 hours after eating"
   ]
 }
 ```
@@ -203,4 +203,4 @@ Pre-configured test scenarios in the Analytics tab:
 
 ---
 
-The Stoma Tracker now features cutting-edge AI capabilities that transform basic food tracking into an intelligent, proactive health management system specifically designed for colostomy care!
+The Gut Tracker now features cutting-edge AI capabilities that transform basic food tracking into an intelligent, proactive health management system specifically designed for gut care!

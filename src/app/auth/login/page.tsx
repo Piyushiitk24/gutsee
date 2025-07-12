@@ -48,7 +48,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Sign In</h1>
-          <p className="text-white/70">Welcome back to Stoma Tracker</p>
+          <p className="text-white/70">Welcome back to Gut Tracker</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

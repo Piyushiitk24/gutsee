@@ -36,7 +36,7 @@ export function Layout({ children }: LayoutProps) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="relative flex flex-col w-64 bg-white">
           <div className="flex items-center justify-between p-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">Stoma Tracker</h1>
+            <h1 className="text-xl font-bold text-gray-900">Gut Tracker</h1>
             <button
               onClick={() => setSidebarOpen(false)}
               className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
@@ -67,7 +67,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
         <div className="flex flex-col flex-1 bg-white border-r border-gray-200">
           <div className="flex items-center p-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">Stoma Tracker</h1>
+            <h1 className="text-xl font-bold text-gray-900">Gut Tracker</h1>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-2">
             {navigation.map((item) => (
@@ -98,7 +98,7 @@ export function Layout({ children }: LayoutProps) {
           >
             <MenuIcon className="h-6 w-6" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">Stoma Tracker</h1>
+          <h1 className="text-lg font-semibold text-gray-900">Gut Tracker</h1>
           <div className="w-10" /> {/* Spacer */}
         </div>
 

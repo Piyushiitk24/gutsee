@@ -56,16 +56,16 @@ export function isAIAvailable(): boolean {
 export async function analyzeIngredients(ingredients: string[]): Promise<MealAnalysis> {
   try {
     const prompt = `
-As a specialized gut health and colostomy management AI, analyze these food ingredients for someone with a colostomy:
+As a specialized gut health and gut management AI, analyze these food ingredients for someone with a gut condition:
 
 Ingredients: ${ingredients.join(', ')}
 
 For each ingredient, provide:
 1. Gut behavior classification (gas-producing, metabolism-boosting, gut-friendly, potentially-problematic)
-2. Risk level for colostomy patients (low, medium, high)
+2. Risk level for gut patients (low, medium, high)
 3. Specific effects on gas production
 4. Impact on metabolism
-5. Detailed recommendations for colostomy patients
+5. Detailed recommendations for gut patients
 6. Safe alternatives if problematic
 
 Then provide an overall meal analysis including:
@@ -98,7 +98,7 @@ Format your response as JSON matching this structure:
   "summary": "brief summary of the meal analysis"
 }
 
-Focus specifically on colostomy care, gas management, and digestive comfort.
+Focus specifically on gut care, gas management, and digestive comfort.
     `;
 
     const result = await model.generateContent(prompt);
@@ -120,18 +120,18 @@ Focus specifically on colostomy care, gas management, and digestive comfort.
 export async function analyzeFoodImage(imageBase64: string): Promise<FoodImageAnalysis> {
   try {
     const prompt = `
-Analyze this food image for someone with a colostomy. Identify:
+Analyze this food image for someone with a gut condition. Identify:
 
 1. All visible foods and ingredients
 2. Potential hidden ingredients based on food type
 3. Confidence level in identification (0-1)
 4. Gut health assessment for each ingredient
-5. Specific suggestions for colostomy patients
+5. Specific suggestions for gut patients
 
 Focus on identifying ingredients that might affect:
 - Gas production
 - Digestive comfort
-- Stoma output consistency
+- Gut output consistency
 - Metabolic impact
 
 Format response as JSON:
@@ -171,7 +171,7 @@ export async function getPersonalizedRecommendations(
 ): Promise<string[]> {
   try {
     const prompt = `
-Based on this colostomy patient's history and current time, provide personalized meal recommendations:
+Based on this gut patient's history and current time, provide personalized meal recommendations:
 
 User History: ${JSON.stringify(userHistory)}
 Current Time: ${currentTime.toISOString()}
@@ -221,7 +221,7 @@ export async function analyzeSymptoms(
 }> {
   try {
     const prompt = `
-Analyze these symptoms for a colostomy patient:
+Analyze these symptoms for a gut patient:
 
 Symptoms: ${symptoms.join(', ')}
 Recent Meals: ${JSON.stringify(recentMeals)}
@@ -241,7 +241,7 @@ Format as JSON:
   "severity": "low|medium|high"
 }
 
-Focus on colostomy-specific considerations and practical advice.
+Focus on gut-specific considerations and practical advice.
     `;
 
     const result = await model.generateContent(prompt);
@@ -284,7 +284,7 @@ export async function generateMealPlan(
 }> {
   try {
     const prompt = `
-Create a ${duration}-day meal plan for a colostomy patient with these requirements:
+Create a ${duration}-day meal plan for a gut patient with these requirements:
 
 Dietary Restrictions: ${dietaryRestrictions.join(', ')}
 Goals: ${goals.join(', ')}
@@ -328,13 +328,13 @@ export async function analyzeFoodEntry(description: string): Promise<{
 }> {
   try {
     const prompt = `
-Analyze this food entry for a colostomy patient:
+Analyze this food entry for a gut patient:
 
 Food Description: "${description}"
 
 Provide analysis including:
 1. Potential warning flags (e.g., "gas-producing", "high-fiber", "spicy")
-2. Risk level assessment for colostomy patients
+2. Risk level assessment for gut patients
 3. Confidence in assessment (0-1)
 4. Specific insights and recommendations
 
@@ -346,7 +346,7 @@ Format as JSON:
   "insights": ["insight1", "insight2"]
 }
 
-Focus on colostomy-specific considerations like gas production, digestive comfort, and stoma output.
+Focus on gut-specific considerations like gas production, digestive comfort, and gut output.
     `;
 
     const result = await model.generateContent(prompt);
@@ -376,7 +376,7 @@ export async function analyzeSymptomEntry(description: string): Promise<{
 }> {
   try {
     const prompt = `
-Analyze this symptom entry for a colostomy patient:
+Analyze this symptom entry for a gut patient:
 
 Symptom Description: "${description}"
 
@@ -394,7 +394,7 @@ Format as JSON:
   "insights": ["insight1", "insight2"]
 }
 
-Focus on colostomy-specific symptoms and their potential causes.
+Focus on gut-specific symptoms and their potential causes.
     `;
 
     const result = await model.generateContent(prompt);
@@ -436,7 +436,7 @@ export async function parseMultiCategoryEntry(description: string, baseTimestamp
 
   try {
     const prompt = `
-You are an expert colostomy management AI assistant. Parse this natural language description into separate, detailed health entries for a stoma tracker app.
+You are an expert gut management AI assistant. Parse this natural language description into separate, detailed health entries for a gut tracker app.
 
 User Description: "${description}"
 Base Timestamp: ${baseTimestamp.toISOString()}
@@ -461,7 +461,7 @@ SEPARATION EXAMPLES:
 CATEGORIES TO DETECT:
 - MEALS: breakfast, lunch, dinner, snack (extract ingredients, quantities, cooking methods)
 - DRINKS: any beverages, tea, coffee, juice, water, milk (extract type, quantity, timing)
-- IRRIGATION: colostomy irrigation (extract quality, difficulty, completion, water flow)
+- IRRIGATION: gut irrigation (extract quality, difficulty, completion, water flow)
 - GAS: gas production, flatulence (extract timing, intensity, triggers)
 - BOWEL: bowel movements, output (extract consistency, volume, timing)
 - MEDICATION: pills, supplements (extract names, dosages, timing)
@@ -644,7 +644,7 @@ function enhancedLocalParsing(description: string, baseTimestamp: Date): Promise
         confidence: 0.7
       },
       {
-        keywords: ['irrigation', 'flush', 'rinse', 'colostomy', 'stoma'],
+        keywords: ['irrigation', 'flush', 'rinse', 'gut'],
         type: 'irrigation',
         confidence: 0.9
       },

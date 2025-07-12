@@ -29,7 +29,7 @@ export default function Signup() {
   const signInWithGoogle = async () => {
     if (isDemoMode) {
       // In demo mode, just create a demo user
-      const { error } = await signUp('demo@stomatracker.com', 'demo123', {
+      const { error } = await signUp('demo@guttracker.com', 'demo123', {
         first_name: 'Demo',
         last_name: 'User'
       });
@@ -129,7 +129,7 @@ export default function Signup() {
               Create Account
             </h1>
             <p className="text-white/70">
-              Join Stoma Tracker to start managing your health
+              Join Gut Tracker to start managing your health
             </p>
             {isDemoMode && (
               <div className="mt-4 bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/50 rounded-lg p-3">

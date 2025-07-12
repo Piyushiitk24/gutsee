@@ -1,4 +1,4 @@
-# Setup Instructions for Stoma Tracker
+# Setup Instructions for Gut Tracker
 
 ## Current Issues and Solutions
 
@@ -79,10 +79,10 @@ Once setup is complete, your app includes:
 6. **Save entry** and get AI analysis
 7. **View analytics** to see patterns and insights
 
-### 6. AI Analysis Features
+## 6. AI Analysis Features
 
 The Gemini API provides:
-- **Risk Assessment**: Low/Medium/High risk for colostomy patients
+- **Risk Assessment**: Low/Medium/High risk for gut patients
 - **Gas Production Flags**: Identifies potentially gas-producing foods
 - **Personalized Recommendations**: Based on your history
 - **Symptom Correlation**: Links food to symptoms over time
@@ -106,4 +106,4 @@ If you encounter issues:
 4. **Review analytics** to understand patterns
 5. **Use AI insights** to improve your diet and health
 
-The app is designed to be extremely user-friendly and flexible, allowing you to track your health in natural language while providing AI-powered insights to help manage your colostomy effectively.
+The app is designed to be extremely user-friendly and flexible, allowing you to track your health in natural language while providing AI-powered insights to help manage your gut effectively.

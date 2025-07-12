@@ -1,7 +1,7 @@
--- Hybrid Food Database Schema for Stoma Tracker
--- This schema supports the hybrid approach: Open Food Facts + specialized stoma data
+-- Hybrid Food Database Schema for Gut Tracker
+-- This schema supports the hybrid approach: Open Food Facts + specialized gut data
 
--- Table for storing specialized stoma-specific food data
+-- Table for storing specialized gut-specific food data
 CREATE TABLE IF NOT EXISTS stoma_food_data (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     
@@ -10,13 +10,13 @@ CREATE TABLE IF NOT EXISTS stoma_food_data (
     food_name VARCHAR(255) NOT NULL,
     food_category VARCHAR(255),
     
-    -- Stoma-specific data
+    -- Gut-specific data
     fodmap_level VARCHAR(10) CHECK (fodmap_level IN ('low', 'medium', 'high')),
     fiber_content VARCHAR(10) CHECK (fiber_content IN ('low', 'medium', 'high')),
     spice_level VARCHAR(10) CHECK (spice_level IN ('none', 'mild', 'medium', 'hot')),
     processing_level VARCHAR(20) CHECK (processing_level IN ('whole', 'minimally-processed', 'processed', 'ultra-processed')),
     
-    -- Stoma safety assessment
+    -- Gut safety assessment
     stoma_friendliness VARCHAR(15) CHECK (stoma_friendliness IN ('excellent', 'good', 'moderate', 'caution', 'avoid')),
     digestibility_score INTEGER CHECK (digestibility_score >= 1 AND digestibility_score <= 10),
     gas_production VARCHAR(10) CHECK (gas_production IN ('low', 'medium', 'high')),
@@ -162,14 +162,14 @@ CREATE POLICY "user_food_experiences_own" ON user_food_experiences
 CREATE POLICY "community_food_insights_read" ON community_food_insights
     FOR SELECT USING (auth.role() = 'authenticated');
 
--- Insert some initial stoma-specific data for common foods
+-- Insert some initial gut-specific data for common foods
 INSERT INTO stoma_food_data (
     food_name, food_category, fodmap_level, fiber_content, spice_level, processing_level,
     stoma_friendliness, digestibility_score, gas_production, irrigation_impact,
     recommended_portion_size, preparation_tips, alternative_suggestions, common_triggers,
     is_verified
 ) VALUES 
--- Stoma-friendly proteins
+-- Gut-friendly proteins
 ('Chicken Breast', 'Protein', 'low', 'low', 'none', 'minimally-processed', 'excellent', 9, 'low', 'none', '100-150g', 
  ARRAY['Cook thoroughly', 'Remove skin', 'Cut into small pieces'], 
  ARRAY['Fish', 'Tofu', 'Eggs'], 
@@ -244,8 +244,8 @@ SELECT
 FROM stoma_food_data sfd
 LEFT JOIN community_food_insights cfi ON sfd.food_id = cfi.food_id;
 
--- Function to search foods with stoma data
-CREATE OR REPLACE FUNCTION search_foods_with_stoma_data(search_term TEXT)
+-- Function to search foods with gut data
+CREATE OR REPLACE FUNCTION search_foods_with_gut_data(search_term TEXT)
 RETURNS TABLE (
     food_name TEXT,
     food_category TEXT,
