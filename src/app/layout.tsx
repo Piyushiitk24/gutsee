@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stoma Tracker | Colostomy Management App",
-  description: "A comprehensive colostomy management application with food tracking, stoma output monitoring, and pattern analysis for better health outcomes.",
-  keywords: ["colostomy", "stoma", "health", "tracking", "medical", "management"],
-  authors: [{ name: "Stoma Tracker Team" }],
+  title: "GutSee | Smart Stoma Health Tracking",
+  description: "AI-powered health tracking for stoma patients. Monitor diet, symptoms, and get personalized insights with smart recommendations.",
+  keywords: ["colostomy", "stoma", "health", "tracking", "medical", "management", "AI", "smart"],
+  authors: [{ name: "GutSee Team" }],
   openGraph: {
-    title: "Stoma Tracker | Colostomy Management App",
-    description: "Your comprehensive colostomy management companion",
+    title: "GutSee | Smart Stoma Health Tracking",
+    description: "AI-powered health tracking for stoma patients with smart insights",
     type: "website",
   },
 };
