@@ -9,6 +9,9 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   signOut: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>
+  resetPassword: (email: string) => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -63,11 +66,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      return { error }
+    } catch (error) {
+      console.error('Error signing in:', error)
+      return { error }
+    }
+  }
+
+  const signUp = async (email: string, password: string, metadata?: any) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata
+        }
+      })
+      return { error }
+    } catch (error) {
+      console.error('Error signing up:', error)
+      return { error }
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`
+      })
+      return { error }
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      return { error }
+    }
+  }
+
   const value = {
     user,
     session,
     loading,
-    signOut
+    signOut,
+    signIn,
+    signUp,
+    resetPassword
   }
 
   return (

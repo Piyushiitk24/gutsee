@@ -441,15 +441,26 @@ You are an expert colostomy management AI assistant. Parse this natural language
 User Description: "${description}"
 Base Timestamp: ${baseTimestamp.toISOString()}
 
-INSTRUCTIONS:
-1. Extract EVERY mentioned activity into separate entries
-2. Infer timing from context (e.g., "before that" = earlier time, "at 8am" = specific time, "later" = later time)
+CRITICAL INSTRUCTIONS:
+1. SEPARATE FOOD FROM DRINKS - Always create separate entries for solid food and beverages
+2. CATEGORIZE BY TIME OF DAY:
+   - 5:00-10:00 AM = breakfast
+   - 10:00-12:00 PM = snack
+   - 12:00-4:00 PM = lunch  
+   - 4:00-7:00 PM = snack (evening/tea time)
+   - 7:00-10:00 PM = dinner
+   - 10:00 PM+ = snack (late night)
 3. Extract detailed information for each category
 4. Be very specific with ingredients, quantities, and characteristics
 
+SEPARATION EXAMPLES:
+- "Bun Maska and Chai" = snack entry (Bun Maska) + drinks entry (Chai)
+- "Coffee with toast" = drinks entry (Coffee) + breakfast/snack entry (Toast)
+- "Lunch with juice" = lunch entry (food) + drinks entry (juice)
+
 CATEGORIES TO DETECT:
 - MEALS: breakfast, lunch, dinner, snack (extract ingredients, quantities, cooking methods)
-- DRINKS: any beverages, protein shakes, water, coffee (extract type, quantity, timing)
+- DRINKS: any beverages, tea, coffee, juice, water, milk (extract type, quantity, timing)
 - IRRIGATION: colostomy irrigation (extract quality, difficulty, completion, water flow)
 - GAS: gas production, flatulence (extract timing, intensity, triggers)
 - BOWEL: bowel movements, output (extract consistency, volume, timing)
@@ -479,16 +490,37 @@ Response Format (JSON):
 {
   "entries": [
     {
-      "type": "drinks",
-      "description": "Protein shake - 1 scoop whey protein",
-      "timestamp": "2025-07-10T07:00:00.000Z",
+      "type": "snack",
+      "description": "Bun Maska - buttered bun with spices",
+      "timestamp": "2025-07-12T18:57:00.000Z",
       "confidence": 0.95,
       "details": {
-        "beverage": "protein shake",
-        "ingredient": "whey protein",
-        "quantity": "1 scoop",
-        "timing": "before breakfast",
-        "estimatedVolume": "250ml"
+        "mealType": "snack",
+        "foodItem": "bun maska",
+        "ingredients": [
+          "bun (1 piece)",
+          "butter (maska)",
+          "spices"
+        ],
+        "quantity": "1 bun",
+        "timing": "evening snack",
+        "estimatedCalories": 200,
+        "riskAssessment": "low"
+      }
+    },
+    {
+      "type": "drinks", 
+      "description": "Chai - 1 cup Indian spiced tea",
+      "timestamp": "2025-07-12T18:57:00.000Z",
+      "confidence": 0.95,
+      "details": {
+        "beverage": "chai",
+        "type": "spiced tea",
+        "quantity": "1 cup",
+        "timing": "with snack",
+        "estimatedVolume": "200ml",
+        "temperature": "hot",
+        "ingredients": ["tea", "milk", "sugar", "spices"]
       }
     },
     {
@@ -535,14 +567,16 @@ Response Format (JSON):
 }
 
 CRITICAL REQUIREMENTS:
-- Extract ALL mentioned activities, don't miss anything
-- Infer realistic timestamps based on context and meal timing
-- Provide detailed ingredient breakdown for meals
-- Include specific characteristics for irrigation and symptoms
+- ALWAYS separate food from drinks into different entries
+- For "Bun Maska and Chai" = 2 entries: food snack + drink
+- Use timing-based meal categories (evening = snack, not general)
+- Include specific ingredient breakdown for meals
+- Provide detailed characteristics for irrigation and symptoms  
 - Use high confidence (0.9+) only when details are very clear
 - If timing is unclear, make reasonable assumptions based on typical daily patterns
+- NEVER use "general" category - always specify the appropriate meal type
 
-Analyze the description thoroughly and extract every possible health-related activity.
+Analyze the description thoroughly and extract every possible health-related activity as separate entries.
     `;
 
     const result = await model!.generateContent(prompt);

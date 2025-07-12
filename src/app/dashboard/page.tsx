@@ -88,18 +88,75 @@ export default function Dashboard() {
   }
 
   const handleEntriesLogged = async (newEntries: any[]) => {
-    // Convert the entries and add them to the list
-    const transformedEntries: LogEntry[] = newEntries.map((entry: any) => ({
-      id: Date.now() + Math.random().toString(), // temporary ID
-      type: entry.type,
-      description: entry.description,
-      timestamp: new Date(entry.timestamp),
-      aiFlags: [],
-      riskLevel: 'low'
-    }))
-    
-    setEntries(prev => [...transformedEntries, ...prev])
-    setShowSmartLogger(false)
+    try {
+      // Save each entry to the database via API
+      const savedEntries: LogEntry[] = []
+      
+      for (const entry of newEntries) {
+        const response = await fetch('/api/entries', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: entry.type,
+            description: entry.description,
+            timestamp: entry.timestamp,
+            confidence: entry.confidence || 0.8
+          })
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            // Transform the database entry to match our UI format
+            const transformedEntry: LogEntry = {
+              id: result.data.id,
+              type: result.data.type,
+              description: result.data.description,
+              timestamp: new Date(result.data.timestamp),
+              aiFlags: result.data.ai_flags || [],
+              riskLevel: result.data.risk_level || 'low'
+            }
+            savedEntries.push(transformedEntry)
+          }
+        } else {
+          console.error('Failed to save entry:', entry)
+          // Still add to UI even if save failed (for offline functionality)
+          const transformedEntry: LogEntry = {
+            id: Date.now() + Math.random().toString(),
+            type: entry.type,
+            description: entry.description,
+            timestamp: new Date(entry.timestamp),
+            aiFlags: [],
+            riskLevel: 'low'
+          }
+          savedEntries.push(transformedEntry)
+        }
+      }
+      
+      // Add saved entries to the UI
+      setEntries(prev => [...savedEntries, ...prev])
+      setShowSmartLogger(false)
+      
+      // Refresh the entries list to get the latest from database
+      await loadEntries()
+      
+    } catch (error) {
+      console.error('Error saving entries:', error)
+      // Fallback: still add to UI for better UX
+      const transformedEntries: LogEntry[] = newEntries.map((entry: any) => ({
+        id: Date.now() + Math.random().toString(),
+        type: entry.type,
+        description: entry.description,
+        timestamp: new Date(entry.timestamp),
+        aiFlags: [],
+        riskLevel: 'low'
+      }))
+      
+      setEntries(prev => [...transformedEntries, ...prev])
+      setShowSmartLogger(false)
+    }
   }
 
   const formatDateTime = (date: Date) => {

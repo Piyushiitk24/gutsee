@@ -298,12 +298,12 @@ export function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntryLoggerP
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden"
+        className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 max-w-4xl w-full max-h-[90vh] flex flex-col"
       >
         {/* Header */}
         <div className="p-6 border-b border-white/20">
@@ -382,9 +382,9 @@ export function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntryLoggerP
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {mode === 'natural' ? (
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 pb-8">
               {/* Natural Language Input */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -672,7 +672,7 @@ Example: 'Had scrambled eggs with 4 eggs, 2 green chilies, grated cheese, little
               </AnimatePresence>
             </div>
           ) : (
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 pb-8">
               {/* Traditional Search */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
