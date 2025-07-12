@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "db-check": "node scripts/check-database.js",
+    "setup": "npm install && npm run db-check"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

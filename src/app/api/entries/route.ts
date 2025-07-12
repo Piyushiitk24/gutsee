@@ -1,47 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase'
 import { GeminiService } from '@/lib/gemini'
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, description, timestamp, userId } = await request.json()
+    const body = await request.json()
+    const { type, description, timestamp, userId, confidence } = body
 
-    if (!type || !description || !timestamp || !userId) {
+    if (!type || !description || !timestamp) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { success: false, error: 'Missing required fields: type, description, timestamp' },
         { status: 400 }
       )
     }
 
-    // Create Supabase client with server-side cookies
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: any) {
-            cookieStore.set(name, value, options)
-          },
-          remove(name: string, options: any) {
-            cookieStore.set(name, '', options)
-          },
-        },
-      }
-    )
+    // Use consistent client-side Supabase client like other routes
+    const supabase = createClient()
+    
+    // Get the current user for authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
 
-    // Get AI analysis for the entry
-    const analysis = await analyzeEntry(type, description)
+    // Use authenticated user's ID, not the passed userId
+    const finalUserId = user.id
+
+    // Get AI analysis for the entry (optional - don't fail if this fails)
+    let analysis: {
+      flags: string[]
+      riskLevel: 'low' | 'medium' | 'high'
+      confidence: number
+    } = {
+      flags: [],
+      riskLevel: 'low',
+      confidence: confidence || 0.8
+    }
+
+    try {
+      const aiAnalysis = await analyzeEntry(type, description)
+      analysis.flags = aiAnalysis.flags
+      analysis.riskLevel = aiAnalysis.riskLevel
+      analysis.confidence = aiAnalysis.confidence
+    } catch (analysisError) {
+      console.warn('AI analysis failed, using defaults:', analysisError)
+    }
 
     // Save the entry to database
     const { data: entry, error } = await supabase
       .from('health_entries')
       .insert({
-        user_id: userId,
+        user_id: finalUserId,
         type,
         description,
         timestamp: new Date(timestamp).toISOString(),
@@ -55,23 +68,23 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Failed to save entry' },
+        { success: false, error: 'Failed to save entry to database', details: error.message },
         { status: 500 }
       )
     }
 
+    console.log('Entry saved successfully:', entry)
+
     return NextResponse.json({ 
       success: true, 
-      data: {
-        ...entry,
-        analysis
-      }
+      data: entry,
+      message: 'Entry saved successfully'
     })
 
   } catch (error) {
     console.error('Error in entries API:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -80,47 +93,32 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    if (!userId) {
+    // Use consistent client-side Supabase client
+    const supabase = createClient()
+    
+    // Get the current user for authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
       return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
       )
     }
-
-    // Create Supabase client with server-side cookies
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: any) {
-            cookieStore.set(name, value, options)
-          },
-          remove(name: string, options: any) {
-            cookieStore.set(name, '', options)
-          },
-        },
-      }
-    )
 
     const { data: entries, error } = await supabase
       .from('health_entries')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.id)
       .order('timestamp', { ascending: false })
       .limit(limit)
 
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Failed to fetch entries' },
+        { success: false, error: 'Failed to fetch entries' },
         { status: 500 }
       )
     }
@@ -133,7 +131,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in entries API:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     )
   }

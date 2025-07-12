@@ -14,13 +14,14 @@ import {
   InformationCircleIcon,
   TagIcon
 } from '@heroicons/react/24/outline';
-import { FOOD_DATABASE, searchFoodItems, findExactMatch, fuzzySearchFood, MEAL_CATEGORIES, suggestMealCategory, type FoodItem, type MealCategory } from '@/data/foodDatabase';
+import { createHybridFoodService, type EnhancedFoodItem } from '@/lib/hybridFoodService';
+import { createClient } from '@/lib/supabase';
 
 interface ParsedEntry {
   foods: Array<{
     item: string;
     amount?: string;
-    match?: FoodItem;
+    match?: EnhancedFoodItem;
     confidence: 'high' | 'medium' | 'low';
   }>;
   symptoms: Array<{
@@ -36,11 +37,11 @@ interface ParsedEntry {
   }>;
   timing: string;
   notes: string;
-  suggestedMealType?: MealCategory;
+  suggestedMealType?: string;
 }
 
 interface SelectedFood {
-  food: FoodItem;
+  food: EnhancedFoodItem;
   amount: string;
   unit: string;
 }
@@ -48,6 +49,16 @@ interface SelectedFood {
 interface SmartEntryLoggerProps {
   onEntriesLogged?: (entries: any[]) => void;
   onClose?: () => void;
+}
+
+const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack', 'drinks'] as const;
+
+function suggestMealType(timeString: string): string {
+  const hour = parseInt(timeString.split(':')[0]);
+  if (hour >= 5 && hour < 11) return 'breakfast';
+  if (hour >= 11 && hour < 16) return 'lunch';
+  if (hour >= 16 && hour < 21) return 'dinner';
+  return 'snack';
 }
 
 export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntryLoggerProps) {
@@ -58,57 +69,86 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Traditional mode states
-  const [selectedMealType, setSelectedMealType] = useState<MealCategory>(MEAL_CATEGORIES.BREAKFAST);
+  const [selectedMealType, setSelectedMealType] = useState('breakfast');
   const [mealTime, setMealTime] = useState('');
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
   const [foodSearch, setFoodSearch] = useState('');
-  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
+  const [searchResults, setSearchResults] = useState<EnhancedFoodItem[]>([]);
   const [showFoodSearch, setShowFoodSearch] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [notes, setNotes] = useState('');
   
   // Parsed data state
   const [parsedData, setParsedData] = useState<ParsedEntry | null>(null);
   const [showParsedData, setShowParsedData] = useState(false);
 
-  // Demo mode detection - checking if we have real API keys
-  const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('supabase.co') || 
-                     process.env.GOOGLE_AI_API_KEY === 'DEMO_KEY_PLACEHOLDER';
+  // Initialize services
+  const supabase = createClient();
+  const hybridService = createHybridFoodService(supabase);
 
   // Auto-suggest meal type based on current time
   useEffect(() => {
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     setMealTime(currentTime);
-    setSelectedMealType(suggestMealCategory(currentTime));
+    setSelectedMealType(suggestMealType(currentTime));
   }, []);
 
-  // Food search functionality
+  // Professional food search functionality
   useEffect(() => {
-    if (foodSearch.length > 1) {
-      let results = searchFoodItems(foodSearch);
-      if (results.length === 0) {
-        results = fuzzySearchFood(foodSearch, 0.6);
-      }
-      setSearchResults(results.slice(0, 10));
+    if (foodSearch.length > 2) {
+      const timeoutId = setTimeout(async () => {
+        setIsSearching(true);
+        try {
+          const results = await hybridService.searchFoods(foodSearch, 10);
+          setSearchResults(results);
+          console.log('Hybrid search results:', results.length, 'foods found');
+        } catch (error) {
+          console.error('Food search error:', error);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     } else {
       setSearchResults([]);
     }
   }, [foodSearch]);
 
-  // Voice recording (simplified for demo)
+  // Voice recording functionality
   const toggleListening = () => {
-    if (isDemoMode) {
-      setIsListening(!isListening);
-      if (!isListening) {
-        // Demo voice input simulation
-        setTimeout(() => {
-          setNaturalText("I had a turkey sandwich with cheddar cheese and fresh tomato for lunch at 1:30pm, felt some gas about 2 hours later");
+    setIsListening(!isListening);
+    if (!isListening) {
+      // Start voice recording using Web Speech API
+      if ('webkitSpeechRecognition' in window) {
+        const recognition = new (window as any).webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setNaturalText(transcript);
           setIsListening(false);
-        }, 2000);
+        };
+        
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+        
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+        
+        recognition.start();
+      } else {
+        // Fallback for browsers without speech recognition
+        setIsListening(false);
+        alert('Speech recognition not supported in this browser');
       }
-    } else {
-      // Real voice recording would go here with Web Speech API
-      setIsListening(!isListening);
     }
   };
 
@@ -160,7 +200,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
             notes: naturalText,
             suggestedMealType: apiResult.data.entries.find((e: any) => 
               ['breakfast', 'lunch', 'dinner'].includes(e.type)
-            )?.type || suggestMealCategory(mealTime)
+            )?.type || suggestMealType(mealTime)
           };
           
           setParsedData(convertedData);
@@ -190,7 +230,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
     }
   };
 
-  // Enhanced local AI simulation with comprehensive food database integration
+  // Enhanced local AI simulation
   const simulateAIParsing = async (text: string): Promise<ParsedEntry> => {
     const lowerText = text.toLowerCase();
     
@@ -212,13 +252,13 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
     }
     
     // Suggest meal type based on timing or content
-    let suggestedMealType = suggestMealCategory(timing);
-    if (lowerText.includes('breakfast') || lowerText.includes('morning')) suggestedMealType = MEAL_CATEGORIES.BREAKFAST;
-    if (lowerText.includes('lunch') || lowerText.includes('afternoon')) suggestedMealType = MEAL_CATEGORIES.LUNCH;
-    if (lowerText.includes('dinner') || lowerText.includes('evening')) suggestedMealType = MEAL_CATEGORIES.DINNER;
-    if (lowerText.includes('snack')) suggestedMealType = MEAL_CATEGORIES.SNACK;
+    let suggestedMealType = suggestMealType(timing);
+    if (lowerText.includes('breakfast') || lowerText.includes('morning')) suggestedMealType = 'breakfast';
+    if (lowerText.includes('lunch') || lowerText.includes('afternoon')) suggestedMealType = 'lunch';
+    if (lowerText.includes('dinner') || lowerText.includes('evening')) suggestedMealType = 'dinner';
+    if (lowerText.includes('snack')) suggestedMealType = 'snack';
     
-    // Enhanced food extraction with database matching
+    // Enhanced food extraction using hybrid search
     const foods: ParsedEntry['foods'] = [];
     
     // Split text into potential food items
@@ -236,31 +276,22 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
       }
     }
     
-    // Match against food database
+    // Use hybrid search for better food matching
     const foundFoods = new Set<string>();
     for (const combo of foodCombinations) {
-      const exactMatch = findExactMatch(combo);
-      if (exactMatch && !foundFoods.has(exactMatch.id)) {
-        foundFoods.add(exactMatch.id);
-        foods.push({
-          item: exactMatch.name,
-          match: exactMatch,
-          confidence: 'high'
-        });
-      }
-    }
-    
-    // Fuzzy search for missed items
-    if (foods.length === 0) {
-      for (const combo of foodCombinations) {
-        const fuzzyMatches = fuzzySearchFood(combo, 0.7);
-        if (fuzzyMatches.length > 0 && !foundFoods.has(fuzzyMatches[0].id)) {
-          foundFoods.add(fuzzyMatches[0].id);
-          foods.push({
-            item: fuzzyMatches[0].name,
-            match: fuzzyMatches[0],
-            confidence: 'medium'
-          });
+      if (combo.length > 2) {
+        try {
+          const searchResults = await hybridService.searchFoods(combo, 3);
+          if (searchResults.length > 0 && !foundFoods.has(searchResults[0].id)) {
+            foundFoods.add(searchResults[0].id);
+            foods.push({
+              item: searchResults[0].name,
+              match: searchResults[0],
+              confidence: 'high'
+            });
+          }
+        } catch (error) {
+          console.warn('Hybrid search failed for:', combo);
         }
       }
     }
@@ -339,7 +370,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
   };
 
   // Add food to traditional mode
-  const addFoodToMeal = (food: FoodItem) => {
+  const addFoodToMeal = (food: EnhancedFoodItem) => {
     setSelectedFoods([...selectedFoods, {
       food,
       amount: '1',
@@ -446,11 +477,6 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
         <div className="flex items-center gap-3">
           <SparklesIcon className="h-8 w-8 text-purple-400" />
           <h2 className="text-2xl font-bold text-white">Smart Entry Logger</h2>
-          {isDemoMode && (
-            <span className="bg-blue-500/20 text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
-              🎭 Demo Mode
-            </span>
-          )}
         </div>
         {onClose && (
           <button onClick={onClose} className="text-white/70 hover:text-white">
@@ -555,13 +581,13 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                       value={parsedData.suggestedMealType || ''}
                       onChange={(e) => setParsedData({
                         ...parsedData,
-                        suggestedMealType: e.target.value as MealCategory
+                        suggestedMealType: e.target.value
                       })}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white text-sm"
                     >
-                      {Object.values(MEAL_CATEGORIES).map(category => (
-                        <option key={category} value={category} className="bg-slate-800">
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                      {MEAL_TYPES.map(type => (
+                        <option key={type} value={type} className="bg-slate-800">
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
                         </option>
                       ))}
                     </select>
@@ -596,7 +622,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                               <p className="text-white font-medium">{food.item}</p>
                               {food.match && (
                                 <p className="text-white/60 text-sm">
-                                  {food.match.category} • {food.match.fodmapLevel.toUpperCase()} FODMAP
+                                  {food.match.categories[0] || 'Food'} • {food.match.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                                 </p>
                               )}
                               {food.amount && (
@@ -604,7 +630,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                               )}
                             </div>
                           </div>
-                          {food.match && food.match.commonTriggers.length > 0 && (
+                          {food.match?.stomaData?.commonTriggers && food.match.stomaData.commonTriggers.length > 0 && (
                             <div className="text-orange-400">
                               <ExclamationTriangleIcon className="h-5 w-5" />
                             </div>
@@ -669,12 +695,12 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
               <label className="block text-white/90 font-medium mb-2">Meal Type</label>
               <select
                 value={selectedMealType}
-                onChange={(e) => setSelectedMealType(e.target.value as MealCategory)}
+                onChange={(e) => setSelectedMealType(e.target.value)}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white"
               >
-                {Object.values(MEAL_CATEGORIES).map(category => (
-                  <option key={category} value={category} className="bg-slate-800">
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                {MEAL_TYPES.map(type => (
+                  <option key={type} value={type} className="bg-slate-800">
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
                   </option>
                 ))}
               </select>
@@ -702,10 +728,15 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                   setShowFoodSearch(true);
                 }}
                 onFocus={() => setShowFoodSearch(true)}
-                placeholder="Search food items (e.g., 'chicken', 'cheese', 'banana')"
+                placeholder="Search from 3+ million foods (e.g., 'masala chai', 'quinoa salad', 'pasta')"
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <MagnifyingGlassIcon className="absolute right-3 top-3 h-6 w-6 text-white/50" />
+              {isSearching && (
+                <div className="absolute right-10 top-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white/50"></div>
+                </div>
+              )}
             </div>
 
             {/* Search Results */}
@@ -730,22 +761,35 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                         <div>
                           <p className="text-white font-medium">{food.name}</p>
                           <p className="text-white/60 text-sm">
-                            {food.category} • {food.fodmapLevel.toUpperCase()} FODMAP
+                            {food.categories[0] || 'Food'} • {food.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                           </p>
+                          {food.brand && (
+                            <p className="text-white/50 text-xs">Brand: {food.brand}</p>
+                          )}
                         </div>
-                        {food.commonTriggers.length > 0 && (
-                          <ExclamationTriangleIcon className="h-5 w-5 text-orange-400" />
-                        )}
+                        <div className="flex items-center gap-2">
+                          {food.stomaData?.stomaFriendliness && (
+                            <div className={`w-3 h-3 rounded-full ${
+                              food.stomaData.stomaFriendliness === 'excellent' ? 'bg-green-400' :
+                              food.stomaData.stomaFriendliness === 'good' ? 'bg-blue-400' :
+                              food.stomaData.stomaFriendliness === 'moderate' ? 'bg-yellow-400' :
+                              food.stomaData.stomaFriendliness === 'caution' ? 'bg-orange-400' : 'bg-red-400'
+                            }`}></div>
+                          )}
+                          {food.stomaData?.commonTriggers && food.stomaData.commonTriggers.length > 0 && (
+                            <ExclamationTriangleIcon className="h-5 w-5 text-orange-400" />
+                          )}
+                        </div>
                       </div>
                     </button>
                   ))}
                 </motion.div>
               )}
-              {/* Debug info */}
-              {showFoodSearch && foodSearch.length > 1 && searchResults.length === 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-red-500/20 border border-red-500/40 rounded-lg p-4">
-                  <p className="text-red-400 text-sm">No results found for "{foodSearch}"</p>
-                  <p className="text-red-300 text-xs mt-1">Try: chai, coffee, eggs, chicken, rice</p>
+              {/* Search status */}
+              {showFoodSearch && foodSearch.length > 2 && searchResults.length === 0 && !isSearching && (
+                <div className="absolute z-10 w-full mt-1 bg-blue-500/20 border border-blue-500/40 rounded-lg p-4">
+                  <p className="text-blue-400 text-sm">Searching professional food database...</p>
+                  <p className="text-blue-300 text-xs mt-1">Try: "chicken curry", "brown rice", "greek yogurt"</p>
                 </div>
               )}
             </AnimatePresence>
@@ -761,13 +805,16 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <p className="text-white font-medium">{selectedFood.food.name}</p>
-                        {selectedFood.food.commonTriggers.length > 0 && (
+                        {selectedFood.food.stomaData?.commonTriggers && selectedFood.food.stomaData.commonTriggers.length > 0 && (
                           <ExclamationTriangleIcon className="h-4 w-4 text-orange-400" />
                         )}
                       </div>
                       <p className="text-white/60 text-sm">
-                        {selectedFood.food.category} • {selectedFood.food.fodmapLevel.toUpperCase()} FODMAP
+                        {selectedFood.food.categories[0] || 'Food'} • {selectedFood.food.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                       </p>
+                      {selectedFood.food.brand && (
+                        <p className="text-white/50 text-xs">Brand: {selectedFood.food.brand}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <input
