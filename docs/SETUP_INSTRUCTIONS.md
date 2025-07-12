@@ -15,11 +15,11 @@ Your `.env` file looks correct, but verify these values:
 
 ```bash
 # These should match your Supabase project
-NEXT_PUBLIC_SUPABASE_URL=https://svqesroiykiydqhdsxmm.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # This should be your Gemini API key
-GOOGLE_AI_API_KEY=AIzaSyCry-Jh-BPuCq5DAHz6dQGDDMVkyPDMC0Q
+GOOGLE_AI_API_KEY=your_google_ai_api_key
 ```
 
 ### 3. Test the Application
