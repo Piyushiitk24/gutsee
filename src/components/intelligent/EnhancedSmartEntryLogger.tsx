@@ -622,7 +622,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                               <p className="text-white font-medium">{food.item}</p>
                               {food.match && (
                                 <p className="text-white/60 text-sm">
-                                  {food.match.categories[0] || 'Food'} • {food.match.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
+                                  {food.match.categories[0] || 'Food'} • {food.match.gutData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                                 </p>
                               )}
                               {food.amount && (
@@ -630,7 +630,7 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                               )}
                             </div>
                           </div>
-                          {food.match?.stomaData?.commonTriggers && food.match.stomaData.commonTriggers.length > 0 && (
+                          {food.match?.gutData?.commonTriggers && food.match.gutData.commonTriggers.length > 0 && (
                             <div className="text-orange-400">
                               <ExclamationTriangleIcon className="h-5 w-5" />
                             </div>
@@ -761,22 +761,22 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                         <div>
                           <p className="text-white font-medium">{food.name}</p>
                           <p className="text-white/60 text-sm">
-                            {food.categories[0] || 'Food'} • {food.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
+                            {food.categories[0] || 'Food'} • {food.gutData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                           </p>
                           {food.brand && (
                             <p className="text-white/50 text-xs">Brand: {food.brand}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          {food.stomaData?.stomaFriendliness && (
+                          {food.gutData?.gutFriendliness && (
                             <div className={`w-3 h-3 rounded-full ${
-                              food.stomaData.stomaFriendliness === 'excellent' ? 'bg-green-400' :
-                              food.stomaData.stomaFriendliness === 'good' ? 'bg-blue-400' :
-                              food.stomaData.stomaFriendliness === 'moderate' ? 'bg-yellow-400' :
-                              food.stomaData.stomaFriendliness === 'caution' ? 'bg-orange-400' : 'bg-red-400'
+                              food.gutData.gutFriendliness === 'excellent' ? 'bg-green-400' :
+                              food.gutData.gutFriendliness === 'good' ? 'bg-blue-400' :
+                              food.gutData.gutFriendliness === 'moderate' ? 'bg-yellow-400' :
+                              food.gutData.gutFriendliness === 'caution' ? 'bg-orange-400' : 'bg-red-400'
                             }`}></div>
                           )}
-                          {food.stomaData?.commonTriggers && food.stomaData.commonTriggers.length > 0 && (
+                          {food.gutData?.commonTriggers && food.gutData.commonTriggers.length > 0 && (
                             <ExclamationTriangleIcon className="h-5 w-5 text-orange-400" />
                           )}
                         </div>
@@ -805,12 +805,12 @@ export default function SmartEntryLogger({ onEntriesLogged, onClose }: SmartEntr
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <p className="text-white font-medium">{selectedFood.food.name}</p>
-                        {selectedFood.food.stomaData?.commonTriggers && selectedFood.food.stomaData.commonTriggers.length > 0 && (
+                        {selectedFood.food.gutData?.commonTriggers && selectedFood.food.gutData.commonTriggers.length > 0 && (
                           <ExclamationTriangleIcon className="h-4 w-4 text-orange-400" />
                         )}
                       </div>
                       <p className="text-white/60 text-sm">
-                        {selectedFood.food.categories[0] || 'Food'} • {selectedFood.food.stomaData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
+                        {selectedFood.food.categories[0] || 'Food'} • {selectedFood.food.gutData?.fodmapLevel?.toUpperCase() || 'Unknown'} FODMAP
                       </p>
                       {selectedFood.food.brand && (
                         <p className="text-white/50 text-xs">Brand: {selectedFood.food.brand}</p>

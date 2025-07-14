@@ -48,7 +48,7 @@ export default function HybridFoodSearch({ onFoodSelect, onClose }: HybridFoodSe
     }
   }, [searchQuery]);
 
-  const getStomaFriendlinessColor = (friendliness?: string) => {
+  const getGutFriendlinessColor = (friendliness?: string) => {
     switch (friendliness) {
       case 'excellent': return 'text-green-600 bg-green-50 border-green-200';
       case 'good': return 'text-green-500 bg-green-50 border-green-200';
@@ -59,7 +59,7 @@ export default function HybridFoodSearch({ onFoodSelect, onClose }: HybridFoodSe
     }
   };
 
-  const getStomaFriendlinessIcon = (friendliness?: string) => {
+  const getGutFriendlinessIcon = (friendliness?: string) => {
     switch (friendliness) {
       case 'excellent':
       case 'good':
@@ -106,11 +106,11 @@ export default function HybridFoodSearch({ onFoodSelect, onClose }: HybridFoodSe
                food.source === 'usda' ? 'USDA' : 'Local DB'}
             </span>
             
-            {food.stomaData && (
-              <span className={`text-xs px-2 py-1 rounded-full border ${getStomaFriendlinessColor(food.stomaData.stomaFriendliness)}`}>
+            {food.gutData && (
+              <span className={`text-xs px-2 py-1 rounded-full border ${getGutFriendlinessColor(food.gutData.gutFriendliness)}`}>
                 <div className="flex items-center gap-1">
-                  {getStomaFriendlinessIcon(food.stomaData.stomaFriendliness)}
-                  {food.stomaData.stomaFriendliness}
+                  {getGutFriendlinessIcon(food.gutData.gutFriendliness)}
+                  {food.gutData.gutFriendliness}
                 </div>
               </span>
             )}
@@ -124,33 +124,33 @@ export default function HybridFoodSearch({ onFoodSelect, onClose }: HybridFoodSe
           )}
 
           {/* Stoma-specific insights */}
-          {food.stomaData && (
+          {food.gutData && (
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-1">
                 <span className="font-medium">Digestibility:</span>
                 <span className={`${
-                  food.stomaData.digestibilityScore >= 8 ? 'text-green-600' :
-                  food.stomaData.digestibilityScore >= 6 ? 'text-yellow-600' : 'text-red-600'
+                  food.gutData.digestibilityScore >= 8 ? 'text-green-600' :
+                  food.gutData.digestibilityScore >= 6 ? 'text-yellow-600' : 'text-red-600'
                 }`}>
-                  {food.stomaData.digestibilityScore}/10
+                  {food.gutData.digestibilityScore}/10
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">Gas:</span>
                 <span className={`${
-                  food.stomaData.gasProduction === 'low' ? 'text-green-600' :
-                  food.stomaData.gasProduction === 'medium' ? 'text-yellow-600' : 'text-red-600'
+                  food.gutData.gasProduction === 'low' ? 'text-green-600' :
+                  food.gutData.gasProduction === 'medium' ? 'text-yellow-600' : 'text-red-600'
                 }`}>
-                  {food.stomaData.gasProduction}
+                  {food.gutData.gasProduction}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">Fiber:</span>
-                <span>{food.stomaData.fiberContent}</span>
+                <span>{food.gutData.fiberContent}</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="font-medium">FODMAP:</span>
-                <span>{food.stomaData.fodmapLevel}</span>
+                <span>{food.gutData.fodmapLevel}</span>
               </div>
             </div>
           )}
@@ -184,22 +184,22 @@ export default function HybridFoodSearch({ onFoodSelect, onClose }: HybridFoodSe
       </div>
 
       {/* Preparation tips */}
-      {food.stomaData?.preparationTips && food.stomaData.preparationTips.length > 0 && (
+      {food.gutData?.preparationTips && food.gutData.preparationTips.length > 0 && (
         <div className="mt-3 p-2 bg-blue-50 rounded text-xs">
           <span className="font-medium text-blue-800">Tips:</span>
           <span className="text-blue-700 ml-1">
-            {food.stomaData.preparationTips[0]}
-            {food.stomaData.preparationTips.length > 1 && ` +${food.stomaData.preparationTips.length - 1} more`}
+            {food.gutData.preparationTips[0]}
+            {food.gutData.preparationTips.length > 1 && ` +${food.gutData.preparationTips.length - 1} more`}
           </span>
         </div>
       )}
 
       {/* Triggers warning */}
-      {food.stomaData?.commonTriggers && food.stomaData.commonTriggers.length > 0 && (
+      {food.gutData?.commonTriggers && food.gutData.commonTriggers.length > 0 && (
         <div className="mt-2 p-2 bg-red-50 rounded text-xs">
           <span className="font-medium text-red-800">Triggers:</span>
           <span className="text-red-700 ml-1">
-            {food.stomaData.commonTriggers.join(', ')}
+            {food.gutData.commonTriggers.join(', ')}
           </span>
         </div>
       )}

@@ -251,48 +251,48 @@ export class DatabaseService {
   }
   */
 
-  // Stoma output methods
-  async getStomaOutputs(userId: string, limit = 50): Promise<TablesRow<'stoma_outputs'>[]> {
+  // Gut output methods
+  async getGutOutputs(userId: string, limit = 50): Promise<TablesRow<'gut_outputs'>[]> {
     const { data, error } = await this.supabase
-      .from('stoma_outputs')
+      .from('gut_outputs')
       .select('*')
       .eq('user_id', userId)
       .order('timestamp', { ascending: false })
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching stoma outputs:', error)
+      console.error('Error fetching gut outputs:', error)
       return []
     }
 
     return data
   }
 
-  async createStomaOutput(outputData: TablesInsert<'stoma_outputs'>): Promise<TablesRow<'stoma_outputs'> | null> {
+  async createGutOutput(outputData: TablesInsert<'gut_outputs'>): Promise<TablesRow<'gut_outputs'> | null> {
     const { data, error } = await this.supabase
-      .from('stoma_outputs')
+      .from('gut_outputs')
       .insert(outputData)
       .select()
       .single()
 
     if (error) {
-      console.error('Error creating stoma output:', error)
+      console.error('Error creating gut output:', error)
       return null
     }
 
     return data
   }
 
-  async updateStomaOutput(outputId: string, outputData: TablesUpdate<'stoma_outputs'>): Promise<TablesRow<'stoma_outputs'> | null> {
+  async updateGutOutput(outputId: string, outputData: TablesUpdate<'gut_outputs'>): Promise<TablesRow<'gut_outputs'> | null> {
     const { data, error } = await this.supabase
-      .from('stoma_outputs')
+      .from('gut_outputs')
       .update(outputData)
       .eq('id', outputId)
       .select()
       .single()
 
     if (error) {
-      console.error('Error updating stoma output:', error)
+      console.error('Error updating gut output:', error)
       return null
     }
 
@@ -720,11 +720,11 @@ export async function getRecentStomaOutput(userId: string, limit = 10) {
   return { data }
 }
 
-export async function createStomaOutput(userId: string, output: any) {
+export async function createGutOutput(userId: string, output: any) {
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('stoma_output')
+    .from('gut_outputs')
     .insert({
       user_id: userId,
       ...output
@@ -733,7 +733,7 @@ export async function createStomaOutput(userId: string, output: any) {
     .single()
   
   if (error) {
-    console.error('Error creating stoma output:', error)
+    console.error('Error creating gut output:', error)
     return { error }
   }
   

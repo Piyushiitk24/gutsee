@@ -485,7 +485,7 @@ export const createHybridFoodService = (supabaseClient: any) => {
 };
 
 // Create a default instance for immediate use
-import { createClient } from '@/lib/supabase';
+import { createClient } from './supabase';
 
 export const hybridFoodService = createHybridFoodService(createClient());
 export default hybridFoodService;

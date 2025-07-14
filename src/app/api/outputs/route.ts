@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase';
+import { createServerClient } from '@/lib/supabase';
 import { db } from '@/lib/database';
 import { ApiResponse } from '@/types';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    // Use server-side Supabase client with cookies
+    const cookieStore = cookies();
+    const supabase = createServerClient(cookieStore);
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,7 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
 
     // Get gut outputs from database
-    const outputs = await db.getStomaOutputs(user.id, limit);
+    const outputs = await db.getGutOutputs(user.id, limit);
 
     const response: ApiResponse<typeof outputs> = {
       success: true,
@@ -45,7 +48,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    // Use server-side Supabase client with cookies
+    const cookieStore = cookies();
+    const supabase = createServerClient(cookieStore);
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date(body.timestamp).toISOString()
     };
     
-    const output = await db.createStomaOutput(outputData);
+    const output = await db.createGutOutput(outputData);
 
     if (!output) {
       return NextResponse.json(
